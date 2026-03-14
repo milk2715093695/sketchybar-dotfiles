@@ -1,0 +1,7 @@
+#!/usr/bin/env lua
+
+-- 加载 helpers 中的函数与工具
+require("helpers")
+
+-- 加载 SketchyBar 初始化配置
+require("init")

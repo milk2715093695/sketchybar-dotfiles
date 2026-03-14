@@ -1,0 +1,37 @@
+############################
+# macOS
+############################
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon?
+Icon
+
+# Thumbnails
+._*
+
+############################
+# Windows
+############################
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+Desktop.ini
+$RECYCLE.BIN/
+
+############################
+# Linux
+############################
+.directory
+
+# bin 目录
+bin/
+
+# test 目录
+test/
+
+# 备份配置
+*.bak
