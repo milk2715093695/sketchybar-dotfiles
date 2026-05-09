@@ -1,37 +1,31 @@
-############################
-# macOS
-############################
+# 操作系统生成文件：macOS
 .DS_Store
 .AppleDouble
 .LSOverride
-
-# Icon?
 Icon
-
-# Thumbnails
 ._*
 
-############################
-# Windows
-############################
+# 操作系统生成文件：Windows
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
 ehthumbs_vista.db
-
 Desktop.ini
 $RECYCLE.BIN/
 
-############################
-# Linux
-############################
+# 操作系统生成文件：Linux
 .directory
 
-# bin 目录
+# 本地工具与缓存
 bin/
+/test/
+/.vscode/
 
-# test 目录
-test/
+# 代理配置与本地索引
+/.claude/
+/.gitnexus/
+/AGENTS.md
+/CLAUDE.md
 
 # 备份配置
 *.bak
