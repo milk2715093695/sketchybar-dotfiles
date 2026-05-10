@@ -8,7 +8,7 @@ local icons = {
         apple = "",
         gear = "",
         cpu = "",
-        clipboard = "Missing Icon",
+        clipboard = "󰆏",
         laptop = "󰌢",
         sleep = "󰤄",
         refresh = "󰑐",
@@ -43,7 +43,7 @@ local icons = {
             download = "",
             connected = "󰖩",
             disconnected = "󰖪",
-            router = "Missing Icon"
+            router = "󰑩"
         },
 
         media = {
