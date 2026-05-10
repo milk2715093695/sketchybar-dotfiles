@@ -31,5 +31,8 @@ bin/
 /taskbooks/
 /.taskbook-backups/
 
+# 可再生成资源（由 install 脚本从上游下载）
+/config/icon_map.lua
+
 # 备份配置
 *.bak
