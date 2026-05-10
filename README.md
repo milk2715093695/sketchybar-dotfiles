@@ -8,6 +8,8 @@
 
 ## 使用方法
 
+`install_sketchybar.sh` 仅负责依赖安装（Homebrew 包、字体、SbarLua），不处理配置文件链接、bar 启动和旧配置备份。
+
 1. 克隆本仓库
 
 ```bash
