@@ -6,9 +6,28 @@
 
 ![bar.png](./assets/screenshots/bar.webp)
 
+## 依赖
+
+- [Homebrew](https://brew.sh)（macOS 包管理器）
+- Git
+- Xcode Command Line Tools（SbarLua 编译需要）
+
 ## 使用方法
 
 `install_sketchybar.sh` 仅负责依赖安装（Homebrew 包、字体、SbarLua），不处理配置文件链接、bar 启动和旧配置备份。
+
+### 一键安装
+
+```bash
+git clone https://github.com/milk2715093695/sketchybar-dotfiles.git && \
+  mv ~/.config/sketchybar ~/.config/sketchybar.bak 2>/dev/null; \
+  ln -s "$PWD/sketchybar-dotfiles" ~/.config/sketchybar && \
+  bash sketchybar-dotfiles/install_sketchybar.sh
+```
+
+### 分步安装
+
+在希望存放仓库的目录下执行：
 
 1. 克隆本仓库
 
@@ -25,15 +44,13 @@ mv ~/.config/sketchybar ~/.config/sketchybar.bak
 3. 创建符号链接
 
 ```bash
-ln -s ~/sketchybar-dotfiles ~/.config/sketchybar
+ln -s "$PWD/sketchybar-dotfiles" ~/.config/sketchybar
 ```
 
 4. 运行安装脚本
 
 ```bash
-cd ~/sketchybar-dotfiles
-chmod +x install_sketchybar.sh
-./install_sketchybar.sh
+bash sketchybar-dotfiles/install_sketchybar.sh
 ```
 
 ## 注意
