@@ -1,4 +1,3 @@
--- 未检查
 local colors = require("config.colors")
 local icons = require("config.icons")
 local settings = require("config.settings")
