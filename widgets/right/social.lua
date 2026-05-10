@@ -1,6 +1,5 @@
--- return M
-local colors = require("config.colors")
-local icon_map = require("config.icon_map")
+local colors = require("config.colors")        -- 加载颜色配置
+local icon_map = require("config.icon_map")    -- 加载图标配置
 
 local M = {}
 

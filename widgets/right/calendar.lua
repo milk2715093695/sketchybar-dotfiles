@@ -1,5 +1,5 @@
-local settings = require("config.settings")
-local colors = require("config.colors")
+local settings = require("config.settings")    -- 加载设置配置
+local colors = require("config.colors")        -- 加载颜色配置
 
 -- Padding item required because of bracket
 sbar.add("item", "right.calendar.padding", { position = "right", width = settings.group_paddings })
@@ -27,9 +27,9 @@ local cal = sbar.add("item", "right.calendar", {
     background = {
         color = colors.bg.bg1,
         border_color = colors.palette.black,
-        border_width = 1
+        border_width = 1,
     },
-    click_script = "open -a 'Calendar'"
+    click_script = "open -a 'Calendar'",
 })
 
 -- Double border for calendar using a single item bracket
@@ -38,7 +38,7 @@ sbar.add("bracket", { cal.name }, {
         color = colors.palette.transparent,
         height = 30,
         border_color = colors.palette.grey,
-    }
+    },
 })
 
 -- Padding item required because of bracket
