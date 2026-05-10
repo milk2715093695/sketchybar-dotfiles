@@ -31,7 +31,7 @@ local max_items = settings.max_menus
 local menu_items = {}
 
 for i = 1, max_items do
-    local menu = sbar.add("item", "menu." .. i, {
+    local menu = sbar.add("item", "left.menu." .. i, {
         padding_left = settings.paddings,
         padding_right = settings.paddings,
         drawing = false,
@@ -49,12 +49,12 @@ for i = 1, max_items do
 end
 
 -- 所有 menu.* 放在 bracket 里
-sbar.add("bracket", { '/menu\\..*/' }, {
+sbar.add("bracket", { '/left\\.menu\\..*/' }, {
     background = { color = colors.bg.bg1 }
 })
 
 -- 菜单右侧 padding
-local menu_padding = sbar.add("item", "menu.padding", {
+local menu_padding = sbar.add("item", "left.menu.padding", {
     drawing = false,
     width = 5
 })
@@ -85,7 +85,7 @@ local switch_button = sbar.add("item", {
 -- 刷新菜单函数
 local function refresh_menus()
     sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -l", function(menus)
-        sbar.set('/menu\\..*/', { drawing = false })
+        sbar.set('/left\\.menu\\..*/', { drawing = false })
         menu_padding:set({ drawing = true })
 
         local id = 1
@@ -109,16 +109,16 @@ switch_button:subscribe("swap_menus_and_spaces", function()
 
     if showing_menus then
         menu_manager:set({ updates = false })
-        sbar.set("/menu\\..*/", { drawing = false })
+        sbar.set("/left\\.menu\\..*/", { drawing = false })
 
         -- 展开工作区
-        sbar.set("/aero_workspace\\..*/", { drawing = true })
+        sbar.set("/left\\.aero_workspace\\..*/", { drawing = true })
         aerospace.refresh()
     else
         menu_manager:set({ updates = true })
 
         -- 收起工作区
-        sbar.set("/aero_workspace\\..*/", { drawing = false })
+        sbar.set("/left\\.aero_workspace\\..*/", { drawing = false })
         refresh_menus()
     end
 
@@ -135,7 +135,7 @@ end)
 -- 监听工作区切换事件
 switch_button:subscribe("aerospace_workspace_change", function(env)
     menu_manager:set({ updates = false })
-    sbar.set("/menu\\..*/", { drawing = false })
+    sbar.set("/left\\.menu\\..*/", { drawing = false })
     switch_button:set({ icon = icons.switch.off })
 end)
 

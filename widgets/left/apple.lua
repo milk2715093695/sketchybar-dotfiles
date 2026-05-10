@@ -5,7 +5,7 @@ local icons = require("config.icons")          -- 加载图标配置
 local popup_helper = require("helpers.popup")
 
 -- apple 图标
-local apple_logo = sbar.add("item", "apple.logo", {
+local apple_logo = sbar.add("item", "left.apple.logo", {
     position = "left",
     icon = {
         font = { size = 16.0 },

@@ -6,7 +6,7 @@ local M = {}
 
 -- 通用函数生成 app widget
 local function create_app_widget(app_name, bundle_id)
-    local widget = sbar.add("item", "widgets." .. app_name:lower(), {
+    local widget = sbar.add("item", "right." .. app_name:lower(), {
         position = "right",
         icon = {
             font = "sketchybar-app-font:Regular:16.0",

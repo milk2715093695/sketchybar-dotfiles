@@ -1,6 +1,6 @@
 local settings = require("config.settings")    -- 加载设置配置
 
-local front_app = sbar.add("item", "front_app", {
+local front_app = sbar.add("item", "left.front_app", {
     display = "active",
     icon = { drawing = false },
     label = {

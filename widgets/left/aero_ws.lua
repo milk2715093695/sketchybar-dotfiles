@@ -3,6 +3,8 @@ local settings = require("config.settings")    -- 加载设置配置
 local icon_map = require("config.icon_map")  	-- 加载应用图标配置
 local json = require("helpers.lunajson.lunajson")	-- 加载 json 解析库
 
+local M = {}
+
 local workspace_items = {}
 local workspace_data = {
     all_ws = {},
@@ -19,7 +21,7 @@ local get_focused_ws = "aerospace list-workspaces --focused --json"
 local get_all_windows = "aerospace list-windows --all --format '%{workspace}%{app-name}' --json"
 
 -- 协程辅助函数
-local function asyncExec(cmd)
+local function async_exec(cmd)
     local co = coroutine.running()
     sbar.exec(cmd, function(result)
         coroutine.resume(co, result)
@@ -28,12 +30,12 @@ local function asyncExec(cmd)
 end
 
 -- 获取 workspace 基本数据（平铺）
-local function getWorkspaceData(callback)
+local function get_workspace_data(callback)
     coroutine.wrap(function()
-        local all_ws = asyncExec(get_all_ws)
-        local empty_ws = asyncExec(get_empty_ws)
-        local focused_ws = asyncExec(get_focused_ws)
-        local all_windows = asyncExec(get_all_windows)
+        local all_ws = async_exec(get_all_ws)
+        local empty_ws = async_exec(get_empty_ws)
+        local focused_ws = async_exec(get_focused_ws)
+        local all_windows = async_exec(get_all_windows)
 
         -- 处理数据
         local monitor_map = {}
@@ -66,7 +68,7 @@ local function getWorkspaceData(callback)
 end
 
 -- 更新单个 workspace 显示
-local function updateWorkspace(ws_id, workspace_data)
+local function update_workspace(ws_id, workspace_data)
     local monitor_id = workspace_data.monitor_map[ws_id] or 1
     local open_windows = workspace_data.ws_windows[ws_id] or {}
     local is_empty = workspace_data.empty_ws[ws_id] or false
@@ -126,23 +128,23 @@ local function updateWorkspace(ws_id, workspace_data)
 end
 
 -- 刷新 workspace 数据
-local function refreshWorkspaceData()
-    getWorkspaceData(function()
+local function refresh_workspace_data()
+    get_workspace_data(function()
         for ws_id in pairs(workspace_items) do
-            updateWorkspace(ws_id, workspace_data)
+            update_workspace(ws_id, workspace_data)
         end
     end)
 end
 
 -- 创建 workspace item，进行初始化时阻塞以确保加载顺序
-local function initWorkspaceItems()
+local function init_workspace_items()
     local result = io.popen(get_all_ws):read("*a")
 
     workspace_data.all_ws = json.decode(result)
     for _, ws in ipairs(workspace_data.all_ws) do
         local ws_id = ws.workspace
 
-        local ws_item = sbar.add("item", "aero_workspace." .. ws_id ,{
+        local ws_item = sbar.add("item", "left.aero_workspace." .. ws_id ,{
             icon = {
                 string = ws_id,
                 color = colors.aerospace.icon_color,
@@ -197,7 +199,7 @@ local refresh_item = sbar.add("item", {
 
 refresh_item:subscribe(
     { "aerospace_focus_change", "display_change" },
-    refreshWorkspaceData
+    refresh_workspace_data
 )
 
 refresh_item:subscribe("aerospace_workspace_change", function(env)
@@ -221,10 +223,8 @@ refresh_item:subscribe("aerospace_workspace_change", function(env)
 end)
 
 -- 初始化 workspace 数据
-initWorkspaceItems()
-refreshWorkspaceData()
+init_workspace_items()
+refresh_workspace_data()
 
-return {
-    items = workspace_items,
-    refresh = refreshWorkspaceData,
-}
+M.refresh = refresh_workspace_data
+return M

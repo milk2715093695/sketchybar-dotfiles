@@ -7,7 +7,7 @@ local settings = require("config.settings")
 -- the cpu load data, which is fired every 2.0 seconds.
 sbar.exec("killall cpu_load >/dev/null; $CONFIG_DIR/helpers/event_providers/cpu_load/bin/cpu_load cpu_update 2.0")
 
-local cpu = sbar.add("graph", "widgets.cpu" , 42, {
+local cpu = sbar.add("graph", "right.cpu" , 42, {
   position = "right",
   graph = { color = colors.palette.blue },
   background = {
@@ -59,12 +59,12 @@ cpu:subscribe("mouse.clicked", function(env)
 end)
 
 -- Background around the cpu item
-sbar.add("bracket", "widgets.cpu.bracket", { cpu.name }, {
+sbar.add("bracket", "right.cpu.bracket", { cpu.name }, {
   background = { color = colors.bg.bg1 }
 })
 
 -- Background around the cpu item
-sbar.add("item", "widgets.cpu.padding", {
+sbar.add("item", "right.cpu.padding", {
   position = "right",
   width = settings.group_paddings
 })

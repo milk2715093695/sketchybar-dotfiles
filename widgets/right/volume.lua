@@ -5,7 +5,7 @@ local settings = require("config.settings")
 
 local popup_width = 250
 
-local volume_percent = sbar.add("item", "widgets.volume1", {
+local volume_percent = sbar.add("item", "right.volume.percent", {
   position = "right",
   icon = { drawing = false },
   label = {
@@ -15,7 +15,7 @@ local volume_percent = sbar.add("item", "widgets.volume1", {
   },
 })
 
-local volume_icon = sbar.add("item", "widgets.volume2", {
+local volume_icon = sbar.add("item", "right.volume.icon", {
   position = "right",
   padding_right = -1,
   icon = {
@@ -38,7 +38,7 @@ local volume_icon = sbar.add("item", "widgets.volume2", {
   },
 })
 
-local volume_bracket = sbar.add("bracket", "widgets.volume.bracket", {
+local volume_bracket = sbar.add("bracket", "right.volume.bracket", {
   volume_icon.name,
   volume_percent.name
 }, {
@@ -46,7 +46,7 @@ local volume_bracket = sbar.add("bracket", "widgets.volume.bracket", {
   popup = { align = "center" }
 })
 
-sbar.add("item", "widgets.volume.padding", {
+sbar.add("item", "right.volume.padding", {
   position = "right",
   width = settings.group_paddings
 })
@@ -112,13 +112,13 @@ local function volume_toggle_details(env)
     sbar.exec("SwitchAudioSource -t output -c", function(result)
       current_audio_device = result:sub(1, -2)
       sbar.exec("SwitchAudioSource -a -t output", function(available)
-        current = current_audio_device
+        local current_device = current_audio_device
         local color = colors.palette.grey
         local counter = 0
 
         for device in string.gmatch(available, '[^\r\n]+') do
           local color = colors.palette.grey
-          if current == device then
+          if current_device == device then
             color = colors.palette.white
           end
           sbar.add("item", "volume.device." .. counter, {

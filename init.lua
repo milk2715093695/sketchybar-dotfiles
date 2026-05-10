@@ -1,5 +1,6 @@
 -- Require the sketchybar module
 -- FelixKratz/SbarLua 提供
+-- sbar 是本仓库中**唯一允许的全局变量**，仅供 SketchyBar API 入口使用
 sbar = require("sketchybar")
 
 -- Set the bar name, if you are using another bar instance than sketchybar
