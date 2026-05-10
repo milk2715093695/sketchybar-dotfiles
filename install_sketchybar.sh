@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 GREEN='\033[32m'
 RED='\033[31m'
 RESET='\033[0m'
@@ -47,10 +49,9 @@ FONT_URL="https://github.com/kvndrsslr/sketchybar-app-font/releases/download/${F
 ICON_MAP_URL="https://github.com/kvndrsslr/sketchybar-app-font/releases/download/${FONT_VERSION}/icon_map.lua"
 
 mkdir -p "$HOME/Library/Fonts"
-mkdir -p "$HOME/.config/sketchybar/config"
 
 curl -fSL --connect-timeout 10 "$FONT_URL" -o "$HOME/Library/Fonts/sketchybar-app-font.ttf"
-curl -fSL --connect-timeout 10 "$ICON_MAP_URL" -o "$HOME/.config/sketchybar/config/icon_map.lua"
+curl -fSL --connect-timeout 10 "$ICON_MAP_URL" -o "$SCRIPT_DIR/config/icon_map.lua"
 
 # SbarLua
 SBARLUA_DIR="/tmp/SbarLua"
@@ -83,5 +84,5 @@ brew list nowplaying-cli &>/dev/null && print_status "OK" "nowplaying-cli" || pr
 brew list sketchybar &>/dev/null && print_status "OK" "sketchybar" || print_status "FAIL" "sketchybar"
 brew list --cask font-jetbrains-mono-nerd-font &>/dev/null && print_status "OK" "font-jetbrains-mono-nerd-font" || print_status "FAIL" "font-jetbrains-mono-nerd-font"
 [ -f "$HOME/Library/Fonts/sketchybar-app-font.ttf" ] && print_status "OK" "sketchybar-app-font.ttf" || print_status "FAIL" "sketchybar-app-font.ttf"
-[ -f "$HOME/.config/sketchybar/config/icon_map.lua" ] && print_status "OK" "icon_map.lua" || print_status "FAIL" "icon_map.lua"
+[ -f "$SCRIPT_DIR/config/icon_map.lua" ] && print_status "OK" "icon_map.lua" || print_status "FAIL" "icon_map.lua"
 [ -f "$SBARLUA_SO" ] && print_status "OK" "SbarLua" || print_status "FAIL" "SbarLua"
