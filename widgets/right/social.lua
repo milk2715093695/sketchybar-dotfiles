@@ -17,7 +17,7 @@ local function create_app_widget(app_name, bundle_id)
     })
 
     widget:subscribe({"routine", "system_woke"}, function()
-        sbar.exec("lsappinfo -all list | grep -i " .. bundle_id, function(app_notify)
+        sbar.exec("lsappinfo -all info \"" .. bundle_id .. "\"", function(app_notify)
             local notify_num = app_notify:match('"StatusLabel"=%{ "label"="?(.-)"? %}')
 
             if notify_num == nil or notify_num == "" then
@@ -40,7 +40,7 @@ local function create_app_widget(app_name, bundle_id)
     return widget
 end
 
-M.wechat = create_app_widget("WeChat", "com.tencent.xinwechat")
+M.wechat = create_app_widget("WeChat", "com.tencent.xinWeChat")
 M.qq = create_app_widget("QQ", "com.tencent.qq")
 
 return M
