@@ -121,6 +121,7 @@ local function update_workspace(ws_id, workspace_data)
         workspace_items[ws_id]:set({
             drawing = true,
             label = { string = '-' },
+            display = monitor_id,
         })
     else
         workspace_items[ws_id]:set({ drawing = false })
@@ -138,9 +139,14 @@ end
 
 -- 创建 workspace item，进行初始化时阻塞以确保加载顺序
 local function init_workspace_items()
-    local result = io.popen(get_all_ws):read("*a")
-
-    workspace_data.all_ws = json.decode(result)
+    local ok, result = pcall(function()
+        local handle = io.popen(get_all_ws)
+        local data = handle:read("*a")
+        handle:close()
+        return json.decode(data)
+    end)
+    if not ok then return end
+    workspace_data.all_ws = result
     for _, ws in ipairs(workspace_data.all_ws) do
         local ws_id = ws.workspace
 
