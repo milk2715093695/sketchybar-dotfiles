@@ -31,4 +31,23 @@ curl -fSL --connect-timeout 10 "$FONT_URL" -o "$HOME/Library/Fonts/sketchybar-ap
 curl -fSL --connect-timeout 10 "$ICON_MAP_URL" -o "$HOME/.config/sketchybar/config/icon_map.lua"
 
 # SbarLua
-(git clone https://github.com/FelixKratz/SbarLua.git /tmp/SbarLua && cd /tmp/SbarLua/ && make install && rm -rf /tmp/SbarLua/)
+SBARLUA_DIR="/tmp/SbarLua"
+SBARLUA_SO="$HOME/.local/share/sketchybar_lua/sketchybar.so"
+
+if [ -f "$SBARLUA_SO" ]; then
+    if [ -d "$SBARLUA_DIR" ]; then
+        git -C "$SBARLUA_DIR" fetch origin 2>/dev/null
+    else
+        git clone --depth 1 https://github.com/FelixKratz/SbarLua.git "$SBARLUA_DIR"
+    fi
+    if ! git -C "$SBARLUA_DIR" diff --quiet HEAD..origin/main; then
+        echo "SbarLua: update available, rebuilding..."
+        git -C "$SBARLUA_DIR" pull origin main && make -C "$SBARLUA_DIR" install
+    else
+        echo "SbarLua: already up to date, skip"
+    fi
+else
+    rm -rf "$SBARLUA_DIR"
+    git clone https://github.com/FelixKratz/SbarLua.git "$SBARLUA_DIR"
+    make -C "$SBARLUA_DIR" install
+fi
