@@ -27,5 +27,9 @@ bin/
 /AGENTS.md
 /CLAUDE.md
 
+# 本地任务书工作区
+/taskbooks/
+/.taskbook-backups/
+
 # 备份配置
 *.bak
