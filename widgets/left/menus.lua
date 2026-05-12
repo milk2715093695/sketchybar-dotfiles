@@ -2,23 +2,8 @@ local colors = require("config.colors")        -- 加载颜色配置
 local settings = require("config.settings")    -- 加载设置配置
 local icons = require("config.icons")          -- 加载图标配置
 
-local aero_ws_enabled = false
-for _, cfg in ipairs(settings.layout.left) do
-    if cfg.name == "aero_ws" and cfg.enabled then
-        aero_ws_enabled = true
-        break
-    end
-end
-
-local aerospace
-if aero_ws_enabled then
-    aerospace = require("widgets.left.aero_ws")
-else
-    -- 占位对象，保证 refresh() 可调用
-    aerospace = {
-        refresh = function() end
-    }
-end
+local aerospace = package.loaded["widgets.left.aero_ws"]
+    or { refresh = function() end }
 
 -- 菜单管理器
 local menu_manager = sbar.add("item", {
