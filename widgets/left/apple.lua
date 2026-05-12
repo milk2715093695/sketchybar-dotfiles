@@ -1,8 +1,53 @@
 local colors = require("config.colors")        -- 加载颜色配置
 local icons = require("config.icons")          -- 加载图标配置
 
--- 加载辅助函数
-local popup_helper = require("helpers.popup")
+-- 添加弹出框项
+local function add_popup_item(args)
+    local parent = args.parent
+    local icon_str = args.icon_str
+    local label_str = args.label_str
+    local click_cmd = args.click_cmd
+    local subscribe_click = args.subscribe_click
+
+    local item = sbar.add("item", {
+        position = "popup." .. parent.name,
+        icon = { string = icon_str },
+        label = { string = label_str },
+        background = {
+            color = colors.popup.transparent,
+            height = 30,
+            drawing = true,
+            border_width = 0,
+        },
+    })
+
+    if subscribe_click then
+        item:subscribe("mouse.clicked", function(_)
+            sbar.exec(click_cmd)
+            parent:set({ popup = { drawing = false } })
+        end)
+    end
+end
+
+-- 添加弹出框分割线
+local function add_divider(args)
+    local parent = args.parent
+
+    sbar.add("item", {
+        position = "popup." .. parent.name,
+        icon = { drawing = false },
+        label = { drawing = false },
+        background = {
+            color = colors.palette.blue,
+            height = 1,
+            drawing = true,
+            border_width = 0,
+        },
+        padding_left = 7,
+        padding_right = 7,
+        width = 120,
+    })
+end
 
 -- apple 图标
 local apple_logo = sbar.add("item", "left.apple.logo", {
@@ -29,7 +74,7 @@ apple_logo:subscribe("mouse.clicked", function(_)
 end)
 
 -- 子条目 1：关于本机
-popup_helper.add_popup_item({
+add_popup_item({
     parent = apple_logo,
     icon_str = icons.laptop,
     label_str = "关于本机",
@@ -38,10 +83,10 @@ popup_helper.add_popup_item({
 })
 
 -- 分割线
-popup_helper.add_divider({ parent = apple_logo })
+add_divider({ parent = apple_logo })
 
 -- 子条目 2：系统设置
-popup_helper.add_popup_item({
+add_popup_item({
     parent = apple_logo,
     icon_str = icons.gear,
     label_str = "系统设置",
@@ -50,10 +95,10 @@ popup_helper.add_popup_item({
 })
 
 -- 分割线
-popup_helper.add_divider({ parent = apple_logo })
+add_divider({ parent = apple_logo })
 
 -- 子条目 3：睡眠
-popup_helper.add_popup_item({
+add_popup_item({
     parent = apple_logo,
     icon_str = icons.sleep,
     label_str = "睡眠",
@@ -62,7 +107,7 @@ popup_helper.add_popup_item({
 })
 
 -- 子条目 4：重启
-popup_helper.add_popup_item({
+add_popup_item({
     parent = apple_logo,
     icon_str = icons.refresh,
     label_str = "重新启动",
@@ -71,7 +116,7 @@ popup_helper.add_popup_item({
 })
 
 -- 子条目 5：关机
-popup_helper.add_popup_item({
+add_popup_item({
     parent = apple_logo,
     icon_str = icons.power,
     label_str = "关机",
@@ -80,10 +125,10 @@ popup_helper.add_popup_item({
 })
 
 -- 分割线
-popup_helper.add_divider({ parent = apple_logo })
+add_divider({ parent = apple_logo })
 
 -- 子条目 6：锁定屏幕
-popup_helper.add_popup_item({
+add_popup_item({
     parent = apple_logo,
     icon_str = icons.lock,
     label_str = "锁定屏幕",
@@ -92,7 +137,7 @@ popup_helper.add_popup_item({
 })
 
 -- 子条目 7：退出登录
-popup_helper.add_popup_item({
+add_popup_item({
     parent = apple_logo,
     icon_str = icons.account,
     label_str = "退出登录",
@@ -101,10 +146,10 @@ popup_helper.add_popup_item({
 })
 
 -- 分割线
-popup_helper.add_divider({ parent = apple_logo })
+add_divider({ parent = apple_logo })
 
 -- 子条目 8：调用原生菜单
-popup_helper.add_popup_item({
+add_popup_item({
     parent = apple_logo,
     icon_str = icons.apple,
     label_str = "原生菜单",
