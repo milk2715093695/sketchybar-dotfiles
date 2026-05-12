@@ -75,6 +75,10 @@ else
     make -C "$SBARLUA_DIR" install
 fi
 
+# Build helpers (soft failure — bar skips affected widgets at runtime)
+echo "Building helper binaries..."
+make -C "$SCRIPT_DIR/helpers" || echo "Warning: helper build failed (check Xcode CLI tools)"
+
 # Verification
 echo ""
 echo "Verification:"
@@ -86,3 +90,6 @@ brew list --cask font-jetbrains-mono-nerd-font &>/dev/null && print_status "OK" 
 [ -f "$HOME/Library/Fonts/sketchybar-app-font.ttf" ] && print_status "OK" "sketchybar-app-font.ttf" || print_status "FAIL" "sketchybar-app-font.ttf"
 [ -f "$SCRIPT_DIR/config/icon_map.lua" ] && print_status "OK" "icon_map.lua" || print_status "FAIL" "icon_map.lua"
 [ -f "$SBARLUA_SO" ] && print_status "OK" "SbarLua" || print_status "FAIL" "SbarLua"
+[ -f "$SCRIPT_DIR/helpers/menus/bin/menus" ] && print_status "OK" "menus" || print_status "FAIL" "menus"
+[ -f "$SCRIPT_DIR/helpers/event_providers/cpu_load/bin/cpu_load" ] && print_status "OK" "cpu_load" || print_status "FAIL" "cpu_load"
+[ -f "$SCRIPT_DIR/helpers/event_providers/network_load/bin/network_load" ] && print_status "OK" "network_load" || print_status "FAIL" "network_load"
