@@ -22,8 +22,9 @@ colors.bar = {
 
 -- 弹窗
 colors.popup = {
-    bg      = 0xC02C2E34,
-    border  = colors.palette.blue,
+    bg          = 0xC02C2E34,
+    border      = colors.palette.blue,
+    transparent = colors.palette.transparent,
 }
 
 -- 背景层
