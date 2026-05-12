@@ -1,92 +1,106 @@
-#include <math.h>
-#include <stdio.h>
-#include <string.h>
+#ifndef NETWORK_H
+#define NETWORK_H
+
 #include <net/if.h>
 #include <net/if_mib.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/select.h>
 #include <sys/sysctl.h>
-#include <sys/time.h>
-#include <stdint.h>
+#include <time.h>
 
-static char unit_str[3][6] = { { " Bps" }, { "KBps" }, { "MBps" } };
+// 定义网络速度单位
+static const char* const unit_str[] = {
+    " Bps",
+    "KBps",
+    "MBps",
+    "GBps",
+};
 
+// 定义网络速度单位枚举
 enum unit {
     UNIT_BPS,
     UNIT_KBPS,
-    UNIT_MBPS
+    UNIT_MBPS,
+    UNIT_GBPS,
 };
 
+// 定义网络信息结构体
 struct network {
     uint32_t row;
     struct ifmibdata data;
-    struct timeval tv_nm1, tv_n, tv_delta;
+    struct timespec ts_nm1, ts_n, ts_delta;
 
     int up;
     int down;
     enum unit up_unit, down_unit;
 };
 
-static inline void ifdata(uint32_t net_row, struct ifmibdata* data) {
-    static size_t size = sizeof(struct ifmibdata);
-    static int32_t data_option[] = { CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_IFDATA, 0, IFDATA_GENERAL };
-    data_option[4] = net_row;
-    sysctl(data_option, 6, data, &size, NULL, 0);
+// 获取网络信息
+static inline bool ifdata(uint32_t net_row, struct ifmibdata* data) {
+    size_t size = sizeof(struct ifmibdata);
+    int mib[] = { CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_IFDATA, (int)net_row, IFDATA_GENERAL };
+    return sysctl(mib, 6, data, &size, NULL, 0) == 0;
 }
 
-static inline void network_init(struct network* net, char* ifname) {
+// 初始化网络信息
+static inline void network_init(struct network* net, const char* ifname) {
     memset(net, 0, sizeof(struct network));
-
-    static int count_option[] = { CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_SYSTEM, IFMIB_IFCOUNT };
-    uint32_t interface_count = 0;
-    size_t size = sizeof(uint32_t);
-    sysctl(count_option, 5, &interface_count, &size, NULL, 0);
-
-    for (int i = 0; i < interface_count; i++) {
-        ifdata(i, &net->data);
-        if (strcmp(net->data.ifmd_name, ifname) == 0) {
-            net->row = i;
-            break;
-        }
+    net->row = if_nametoindex(ifname);
+    if (net->row == 0) {
+        fprintf(stderr, "Error: Interface '%s' not found\n", ifname);
+        exit(1);
     }
 }
 
+// 格式化网络速度
+static inline void format_rate(double bytes_per_sec, int* value, enum unit* unit) {
+    if (bytes_per_sec < 1000.0) {
+        *unit = UNIT_BPS;
+        *value = (int)(bytes_per_sec + 0.5);
+    } else if (bytes_per_sec < 1000000.0) {
+        *unit = UNIT_KBPS;
+        *value = (int)(bytes_per_sec / 1000.0 + 0.5);
+    } else if (bytes_per_sec < 1000000000.0) {
+        *unit = UNIT_MBPS;
+        *value = (int)(bytes_per_sec / 1000000.0 + 0.5);
+    } else {
+        *unit = UNIT_GBPS;
+        *value = (int)(bytes_per_sec / 1000000000.0 + 0.5);
+    }
+}
+
+// 更新网络信息
 static inline void network_update(struct network* net) {
-    gettimeofday(&net->tv_n, NULL);
-    timersub(&net->tv_n, &net->tv_nm1, &net->tv_delta);
-    net->tv_nm1 = net->tv_n;
+    clock_gettime(CLOCK_MONOTONIC, &net->ts_n);
+    net->ts_delta.tv_sec  = net->ts_n.tv_sec  - net->ts_nm1.tv_sec;
+    net->ts_delta.tv_nsec = net->ts_n.tv_nsec - net->ts_nm1.tv_nsec;
+    if (net->ts_delta.tv_nsec < 0) {
+        net->ts_delta.tv_sec  -= 1;
+        net->ts_delta.tv_nsec += 1000000000L;
+    }
+    net->ts_nm1 = net->ts_n;
 
     uint64_t ibytes_nm1 = net->data.ifmd_data.ifi_ibytes;
     uint64_t obytes_nm1 = net->data.ifmd_data.ifi_obytes;
-    ifdata(net->row, &net->data);
+    if (!ifdata(net->row, &net->data)) return;
 
-    double time_scale = net->tv_delta.tv_sec + 1e-6 * net->tv_delta.tv_usec;
+    if (net->data.ifmd_data.ifi_ibytes < ibytes_nm1 || net->data.ifmd_data.ifi_obytes < obytes_nm1) {
+        net->down = 0;
+        net->up   = 0;
+        return;
+    }
+
+    double time_scale = net->ts_delta.tv_sec + 1e-9 * net->ts_delta.tv_nsec;
     if (time_scale < 1e-6 || time_scale > 1e2) return;
 
     double delta_ibytes = (double)(net->data.ifmd_data.ifi_ibytes - ibytes_nm1) / time_scale;
     double delta_obytes = (double)(net->data.ifmd_data.ifi_obytes - obytes_nm1) / time_scale;
 
-    double exponent_ibytes = log10(delta_ibytes);
-    double exponent_obytes = log10(delta_obytes);
-
-    if (exponent_ibytes < 3) {
-        net->down_unit = UNIT_BPS;
-        net->down = delta_ibytes;
-    } else if (exponent_ibytes < 6) {
-        net->down_unit = UNIT_KBPS;
-        net->down = delta_ibytes / 1000.0;
-    } else if (exponent_ibytes < 9) {
-        net->down_unit = UNIT_MBPS;
-        net->down = delta_ibytes / 1000000.0;
-    }
-
-    if (exponent_obytes < 3) {
-        net->up_unit = UNIT_BPS;
-        net->up = delta_obytes;
-    } else if (exponent_obytes < 6) {
-        net->up_unit = UNIT_KBPS;
-        net->up = delta_obytes / 1000.0;
-    } else if (exponent_obytes < 9) {
-        net->up_unit = UNIT_MBPS;
-        net->up = delta_obytes / 1000000.0;
-    }
+    format_rate(delta_ibytes, &net->down, &net->down_unit);
+    format_rate(delta_obytes, &net->up,   &net->up_unit);
 }
+
+#endif
