@@ -2,7 +2,7 @@ local icons = require("config.icons")          -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
 
-sbar.exec("pkill -f 'network_load.*network_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load en0 network_update 2.0")
+sbar.exec("pkill -f 'network_load.*network_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load " .. settings.network.interface .. " network_update 2.0")
 
 local popup_width = 250
 
@@ -172,7 +172,7 @@ wifi_up:subscribe("network_update", function(env)
 end)
 
 wifi:subscribe({"wifi_change", "system_woke"}, function(env)
-    sbar.exec("ipconfig getifaddr en0", function(ip)
+    sbar.exec("ipconfig getifaddr " .. settings.network.interface, function(ip)
         local connected = not (ip == "")
         wifi:set({
             icon = {
@@ -194,16 +194,16 @@ local function toggle_details()
         sbar.exec("networksetup -getcomputername", function(result)
             hostname:set({ label = result })
         end)
-        sbar.exec("ipconfig getifaddr en0", function(result)
+        sbar.exec("ipconfig getifaddr " .. settings.network.interface, function(result)
             ip:set({ label = result })
         end)
-        sbar.exec("ipconfig getsummary en0 | awk -F ' SSID : '  '/ SSID : / {print $2}'", function(result)
+        sbar.exec("ipconfig getsummary " .. settings.network.interface .. " | awk -F ' SSID : '  '/ SSID : / {print $2}'", function(result)
             ssid:set({ label = result })
         end)
-        sbar.exec("networksetup -getinfo Wi-Fi | awk -F 'Subnet mask: ' '/^Subnet mask: / {print $2}'", function(result)
+        sbar.exec("networksetup -getinfo " .. settings.network.service .. " | awk -F 'Subnet mask: ' '/^Subnet mask: / {print $2}'", function(result)
             mask:set({ label = result })
         end)
-        sbar.exec("networksetup -getinfo Wi-Fi | awk -F 'Router: ' '/^Router: / {print $2}'", function(result)
+        sbar.exec("networksetup -getinfo " .. settings.network.service .. " | awk -F 'Router: ' '/^Router: / {print $2}'", function(result)
             router:set({ label = result })
         end)
     else

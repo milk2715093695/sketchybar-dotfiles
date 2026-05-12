@@ -6,6 +6,12 @@ return {
     max_icons_per_ws = 5,   -- 每个 aerospace 的 workspaces 最多显示多少个图标
     max_menus = 15,         -- 最多显示 15 个菜单项
 
+    -- 系统环境
+    network = {
+        interface = "en0",      -- 默认网络接口
+        service   = "Wi-Fi",    -- networksetup 中的服务名
+    },
+
     -- 布局配置
     layout = {
         left = {
