@@ -24,16 +24,6 @@ print_status() {
 
 echo "Installing Dependencies"
 
-# Detect latest sketchybar-app-font version
-FALLBACK_FONT_VERSION="v2.0.56"
-FONT_VERSION=$(curl -fsSL --connect-timeout 10 https://api.github.com/repos/kvndrsslr/sketchybar-app-font/releases/latest 2>/dev/null | grep '"tag_name"' | cut -d'"' -f4 || true)
-if [ -z "$FONT_VERSION" ]; then
-    echo "Warning: Could not detect latest font version, using fallback $FALLBACK_FONT_VERSION"
-    FONT_VERSION="$FALLBACK_FONT_VERSION"
-else
-    echo "Detected latest sketchybar-app-font version: $FONT_VERSION"
-fi
-
 # Packages
 brew install lua
 brew install switchaudio-osx
@@ -44,14 +34,18 @@ brew install sketchybar
 
 # Fonts
 brew install --cask font-jetbrains-mono-nerd-font
+brew install --cask font-sketchybar-app-font
 
-FONT_URL="https://github.com/kvndrsslr/sketchybar-app-font/releases/download/${FONT_VERSION}/sketchybar-app-font.ttf"
-ICON_MAP_URL="https://github.com/kvndrsslr/sketchybar-app-font/releases/download/${FONT_VERSION}/icon_map.lua"
-
-mkdir -p "$HOME/Library/Fonts"
-
-curl -fSL --connect-timeout 10 "$FONT_URL" -o "$HOME/Library/Fonts/sketchybar-app-font.ttf"
-curl -fSL --connect-timeout 10 "$ICON_MAP_URL" -o "$SCRIPT_DIR/config/icon_map.lua"
+# icon_map.lua 由 brew 管理字体版本；手动同步以匹配已安装字体
+FONT_VERSION=$(brew list --cask --versions font-sketchybar-app-font 2>/dev/null | awk '{print $2}' || true)
+if [ -z "$FONT_VERSION" ]; then
+    echo "Warning: font-sketchybar-app-font not installed, skipping icon_map download"
+else
+    echo "Syncing icon_map.lua for sketchybar-app-font v$FONT_VERSION"
+    curl -fSL --connect-timeout 10 \
+        "https://github.com/kvndrsslr/sketchybar-app-font/releases/download/v${FONT_VERSION}/icon_map.lua" \
+        -o "$SCRIPT_DIR/config/icon_map.lua"
+fi
 
 # SbarLua
 SBARLUA_DIR="/tmp/SbarLua"
@@ -87,7 +81,7 @@ brew list switchaudio-osx &>/dev/null && print_status "OK" "switchaudio-osx" || 
 brew list nowplaying-cli &>/dev/null && print_status "OK" "nowplaying-cli" || print_status "FAIL" "nowplaying-cli"
 brew list sketchybar &>/dev/null && print_status "OK" "sketchybar" || print_status "FAIL" "sketchybar"
 brew list --cask font-jetbrains-mono-nerd-font &>/dev/null && print_status "OK" "font-jetbrains-mono-nerd-font" || print_status "FAIL" "font-jetbrains-mono-nerd-font"
-[ -f "$HOME/Library/Fonts/sketchybar-app-font.ttf" ] && print_status "OK" "sketchybar-app-font.ttf" || print_status "FAIL" "sketchybar-app-font.ttf"
+brew list --cask font-sketchybar-app-font &>/dev/null && print_status "OK" "font-sketchybar-app-font" || print_status "FAIL" "font-sketchybar-app-font"
 [ -f "$SCRIPT_DIR/config/icon_map.lua" ] && print_status "OK" "icon_map.lua" || print_status "FAIL" "icon_map.lua"
 [ -f "$SBARLUA_SO" ] && print_status "OK" "SbarLua" || print_status "FAIL" "SbarLua"
 [ -f "$SCRIPT_DIR/helpers/menus/bin/menus" ] && print_status "OK" "menus" || print_status "FAIL" "menus"
