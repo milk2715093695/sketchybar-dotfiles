@@ -28,7 +28,7 @@ for i = 1, max_items do
             padding_left = 6,
             padding_right = 6,
         },
-        click_script = "$CONFIG_DIR/helpers/menus/bin/menus -s " .. i,
+        click_script = settings.menus_bin .. " -s " .. i,
     })
     menu_items[i] = menu
 end
@@ -69,7 +69,7 @@ local switch_button = sbar.add("item", {
 
 -- 刷新菜单函数
 local function refresh_menus()
-    sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -l", function(menus)
+    sbar.exec(settings.menus_bin .. " -l", function(menus)
         sbar.set('/left\\.menu\\..*/', { drawing = false })
         menu_padding:set({ drawing = true })
 

@@ -5,6 +5,7 @@ return {
     font = require("config.default_font"),
     max_icons_per_ws = 5,   -- 每个 aerospace 的 workspaces 最多显示多少个图标
     max_menus = 15,         -- 最多显示 15 个菜单项
+    menus_bin = "$CONFIG_DIR/helpers/menus/bin/menus",  -- menus helper 二进制（click_script/sbar.exec 中展开 $CONFIG_DIR）
 
     -- 系统环境
     network = {

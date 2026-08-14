@@ -1,5 +1,6 @@
 local colors = require("config.colors")        -- 加载颜色配置
 local icons = require("config.icons")          -- 加载图标配置
+local settings = require("config.settings")    -- 加载设置配置
 
 -- 添加弹出框项
 local function add_popup_item(args)
@@ -153,6 +154,6 @@ add_popup_item({
     parent = apple_logo,
     icon_str = icons.apple,
     label_str = "原生菜单",
-    click_cmd = "$HOME/.config/sketchybar/helpers/menus/bin/menus -s 0",
+    click_cmd = settings.menus_bin .. " -s 0",
     subscribe_click = true,
 })
