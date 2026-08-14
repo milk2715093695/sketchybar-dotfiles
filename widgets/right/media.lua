@@ -1,12 +1,15 @@
 -- 未检查
 local icons = require("config.icons")        -- 加载图标配置
 local colors = require("config.colors")       -- 加载颜色配置
+local settings = require("config.settings")   -- 加载设置配置
 
 local whitelist = { ["Spotify"] = true,
                     ["Music"] = true }
 
 local media_cover = sbar.add("item", "right.media.cover", {
     position = "right",
+    padding_left = 0,
+    padding_right = 0,
     background = {
         image = {
             string = "media.artwork",

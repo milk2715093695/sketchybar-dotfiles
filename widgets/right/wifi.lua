@@ -1,6 +1,7 @@
 local icons = require("config.icons")          -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
+local spacer = require("helpers.spacer")       -- 统一间距 spacer
 
 sbar.exec("pkill -f 'network_load.*network_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load " .. settings.network.interface .. " network_update 2.0")
 
@@ -26,6 +27,7 @@ local wifi_up = sbar.add("item", "right.wifi.up", {
         },
         color = colors.palette.red,
         string = "??? Bps",
+        padding_right = settings.content_padding,
     },
     y_offset = 4,
 })
@@ -49,12 +51,14 @@ local wifi_down = sbar.add("item", "right.wifi.down", {
         },
         color = colors.palette.blue,
         string = "??? Bps",
+        padding_right = settings.content_padding,
     },
     y_offset = -4,
 })
 
 local wifi = sbar.add("item", "right.wifi", {
     position = "right",
+    padding_left = settings.content_padding,
     label = { drawing = false },
 })
 
@@ -150,7 +154,7 @@ local router = sbar.add("item", {
     },
 })
 
-sbar.add("item", "right.wifi.padding", { position = "right", width = settings.group_paddings })
+spacer.add("right.wifi.padding")
 
 wifi_up:subscribe("network_update", function(env)
     local up_color = (env.upload == "000 Bps") and colors.palette.grey or colors.palette.red

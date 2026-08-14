@@ -1,11 +1,14 @@
 local icons = require("config.icons")          -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
+local spacer = require("helpers.spacer")       -- 统一间距 spacer
 
 sbar.exec("pkill -f 'cpu_load cpu_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/cpu_load/bin/cpu_load cpu_update 2.0")
 
 local cpu = sbar.add("graph", "right.cpu", 42, {
     position = "right",
+    padding_left = 0,
+    padding_right = settings.content_padding,
     graph = { color = colors.palette.blue },
     background = {
         height = 22,
@@ -13,7 +16,11 @@ local cpu = sbar.add("graph", "right.cpu", 42, {
         border_color = { alpha = 0 },
         drawing = true,
     },
-    icon = { string = icons.cpu },
+    icon = {
+        string = icons.cpu,
+        padding_left = settings.content_padding,
+        padding_right = settings.content_padding,
+    },
     label = {
         string = "cpu ??%",
         font = {
@@ -21,13 +28,20 @@ local cpu = sbar.add("graph", "right.cpu", 42, {
             style = settings.font.style_map["Bold"],
             size = 9.0,
         },
-        align = "right",
-        padding_right = 0,
+        align = "left",
+        -- 负 padding 左移 label 至 graph 左缘对齐；偏移 = graph 数据点数 42
+        padding_left = -42,
+        padding_right = settings.content_padding,
         width = 0,
         y_offset = 4,
     },
-    padding_right = settings.paddings + 6,
 })
+
+sbar.add("bracket", "right.cpu.bracket", { cpu.name }, {
+    background = { color = colors.bg.bg1 },
+})
+
+spacer.add("right.cpu.padding")
 
 cpu:subscribe("cpu_update", function(env)
     -- Also available: env.user_load, env.sys_load
@@ -54,14 +68,3 @@ end)
 cpu:subscribe("mouse.clicked", function(env)
     sbar.exec("open -a 'Activity Monitor'")
 end)
-
--- Background around the cpu item
-sbar.add("bracket", "right.cpu.bracket", { cpu.name }, {
-    background = { color = colors.bg.bg1 },
-})
-
--- Padding item for the cpu bracket
-sbar.add("item", "right.cpu.padding", {
-    position = "right",
-    width = settings.group_paddings,
-})

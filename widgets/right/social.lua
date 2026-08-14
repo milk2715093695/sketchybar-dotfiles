@@ -1,5 +1,6 @@
 local colors = require("config.colors")        -- 加载颜色配置
 local icon_map = require("config.icon_map")    -- 加载图标配置
+local spacer = require("helpers.spacer")       -- 统一间距 spacer
 
 local M = {}
 
@@ -41,5 +42,8 @@ end
 
 M.wechat = create_app_widget("WeChat", "com.tencent.xinWeChat")
 M.qq = create_app_widget("QQ", "com.tencent.qq")
+
+-- wechat/qq 为透明 item，刻意紧贴；外部间距由组尾 spacer 统一
+spacer.add("right.social.padding")
 
 return M

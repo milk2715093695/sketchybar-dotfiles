@@ -1,22 +1,26 @@
 local colors = require("config.colors")         -- 加载颜色配置
 local icons = require("config.icons")           -- 加载图标配置
 local settings = require("config.settings")     -- 加载设置配置
+local spacer = require("helpers.spacer")       -- 统一间距 spacer
 
 local popup_width = 250
 
 local volume_percent = sbar.add("item", "right.volume.percent", {
     position = "right",
+    padding_right = settings.content_padding,
+    padding_left = 0,
     icon = { drawing = false },
     label = {
         string = "??%",
-        padding_left = -1,
+        padding_left = settings.paddings,
         font = { family = settings.font.numbers },
     },
 })
 
 local volume_icon = sbar.add("item", "right.volume.icon", {
     position = "right",
-    padding_right = -1,
+    padding_left = settings.content_padding,
+    padding_right = 0,
     icon = {
         string = icons.volume._100,
         width = 0,
@@ -30,6 +34,7 @@ local volume_icon = sbar.add("item", "right.volume.icon", {
     label = {
         width = 25,
         align = "left",
+        padding_right = settings.paddings,
         font = {
             style = settings.font.style_map["Regular"],
             size = 14.0,
@@ -45,10 +50,7 @@ local volume_bracket = sbar.add("bracket", "right.volume.bracket", {
     popup = { align = "center" },
 })
 
-sbar.add("item", "right.volume.padding", {
-    position = "right",
-    width = settings.group_paddings,
-})
+spacer.add("right.volume.padding")
 
 local volume_slider = sbar.add("slider", popup_width, {
     position = "popup." .. volume_bracket.name,
