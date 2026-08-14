@@ -173,8 +173,8 @@ local function handle_aerospace_event(env)
         last_workspace = evt.workspace
         workspace_data.focused_ws = evt.workspace
         highlight_ws(evt.workspace)
-        -- subscribe 无窗口关闭事件：切换时拉一次窗口列表兜底
-        refresh_ws(evt.workspace)
+        -- subscribe 无窗口关闭事件：切换时全量扫描兜底，纠正所有 workspace 的残留图标
+        refresh_workspace_data()
     elseif evt._event == "window-detected" then
         -- XXX: 窗口图标按 icon 去重，多个 app 共用同一 icon 时后到的被吞
         local apps = workspace_data.ws_windows[evt.workspace] or {}
@@ -204,8 +204,8 @@ local function handle_aerospace_event(env)
     end
 end
 
--- XXX: subscribe 无 window-removed 事件（aerospace 0.21 事件全集），窗口状态机做不到纯增量，
---      切换/focus-changed 时靠 scoped 拉取兜底，拉取失败则保留旧图标（宁可旧不错）
+-- XXX: subscribe 无 window-removed 事件（aerospace 0.21 事件全集），窗口状态机做不到纯增量。
+--      切换时全量扫描兜底，focus-changed 时 scoped 拉取兜底；拉取失败则保留旧图标（宁可旧不错）
 
 -- 创建 workspace item，进行初始化时阻塞以确保加载顺序
 local function init_workspace_items()
