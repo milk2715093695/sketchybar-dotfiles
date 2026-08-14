@@ -3,7 +3,7 @@ local settings = require("config.settings")    -- 加载设置配置
 local icons = require("config.icons")          -- 加载图标配置
 
 local aerospace = package.loaded["widgets.left.aero_ws"]
-    or { refresh = function() end }
+    or { refresh = function() end, show = function() end }
 
 -- 菜单管理器
 local menu_manager = sbar.add("item", {
@@ -96,8 +96,8 @@ switch_button:subscribe("swap_menus_and_spaces", function()
         menu_manager:set({ updates = false })
         sbar.set("/left\\.menu\\..*/", { drawing = false })
 
-        -- 展开工作区
-        sbar.set("/left\\.aero_workspace\\..*/", { drawing = true })
+        -- 展开工作区：按缓存数据直接显示，refresh 异步兜底纠正残留图标
+        aerospace.show()
         aerospace.refresh()
     else
         menu_manager:set({ updates = true })

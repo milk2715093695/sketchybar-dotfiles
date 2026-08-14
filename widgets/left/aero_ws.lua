@@ -155,6 +155,14 @@ local function refresh_workspace_data()
     end)()
 end
 
+-- 按缓存数据同步决定所有 workspace 的显示状态（不等待异步刷新）
+-- 供 menus.lua 收起菜单时调用，避免先全绘再隐藏空 workspace 的闪烁
+local function show_workspaces()
+    for ws_id in pairs(workspace_items) do
+        update_workspace(ws_id, workspace_data)
+    end
+end
+
 -- 处理 aerospace subscribe 推送的增量事件
 local function handle_aerospace_event(env)
     -- SbarLua 已将 JSON env 值自动解析为 Lua 表
@@ -285,5 +293,6 @@ refresh_item:subscribe("display_change", refresh_workspace_data)
 init_workspace_items()
 refresh_workspace_data()
 
+M.show = show_workspaces
 M.refresh = refresh_workspace_data
 return M
