@@ -45,7 +45,7 @@ local function load_widgets(side)
             end
 
             if not skip then
-                local widget = require("widgets." .. side .. "." .. cfg.name)
+                require("widgets." .. side .. "." .. cfg.name) -- 仅副作用加载，返回值未用
             end
         end
     end
