@@ -31,8 +31,8 @@ bin/
 /taskbooks/
 /.taskbook-backups/
 
-# 可再生成资源（由 install 脚本从上游下载）
-/config/icon_map.lua
+# 可再生成资源（由 install_sketchybar.sh 下载；fallback 快照已入库）
+/config/icon_map_generated.lua
 
 # 备份配置
 *.bak

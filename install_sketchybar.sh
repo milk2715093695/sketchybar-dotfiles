@@ -22,6 +22,54 @@ print_status() {
     fi
 }
 
+sync_icon_map() {
+    local version tmp target
+    version=$(brew list --cask --versions font-sketchybar-app-font 2>/dev/null | awk '{print $2}' || true)
+    if [ -z "$version" ]; then
+        echo "Warning: font-sketchybar-app-font not installed, keeping current icon map"
+        return 0
+    fi
+
+    target="$SCRIPT_DIR/config/icon_map_generated.lua"
+    tmp=$(mktemp)
+
+    echo "Syncing icon map for sketchybar-app-font v$version"
+    if ! curl -fSL --connect-timeout 10 \
+        "https://github.com/kvndrsslr/sketchybar-app-font/releases/download/v${version}/icon_map.lua" \
+        -o "$tmp"; then
+        echo "Warning: icon map download failed, keeping existing map"
+        rm -f "$tmp"
+        return 0
+    fi
+
+    if command -v lua >/dev/null && ! lua -e "assert(loadfile('$tmp'))" 2>/dev/null; then
+        echo "Warning: downloaded icon map is not valid Lua, keeping existing map"
+        rm -f "$tmp"
+        return 0
+    fi
+
+    {
+        echo "-- sketchybar-app-font v$version（由 install_sketchybar.sh 下载，请勿手改）"
+        cat "$tmp"
+    } > "$tmp.new"
+    mv "$tmp.new" "$target"
+    rm -f "$tmp"
+    echo "icon map updated: $target"
+    sketchybar --reload >/dev/null 2>&1 || true
+}
+
+case "${1:-}" in
+    --icons-only)
+        sync_icon_map
+        exit 0
+        ;;
+    "") ;;
+    *)
+        echo "Usage: $0 [--icons-only]"
+        exit 1
+        ;;
+esac
+
 echo "Installing Dependencies"
 
 # Packages
@@ -36,16 +84,8 @@ brew install sketchybar
 brew install --cask font-jetbrains-mono-nerd-font
 brew install --cask font-sketchybar-app-font
 
-# icon_map.lua 由 brew 管理字体版本；手动同步以匹配已安装字体
-FONT_VERSION=$(brew list --cask --versions font-sketchybar-app-font 2>/dev/null | awk '{print $2}' || true)
-if [ -z "$FONT_VERSION" ]; then
-    echo "Warning: font-sketchybar-app-font not installed, skipping icon_map download"
-else
-    echo "Syncing icon_map.lua for sketchybar-app-font v$FONT_VERSION"
-    curl -fSL --connect-timeout 10 \
-        "https://github.com/kvndrsslr/sketchybar-app-font/releases/download/v${FONT_VERSION}/icon_map.lua" \
-        -o "$SCRIPT_DIR/config/icon_map.lua"
-fi
+# icon_map：生成物优先，仓库内置 fallback 快照兜底
+sync_icon_map
 
 # SbarLua
 SBARLUA_DIR="/tmp/SbarLua"
@@ -82,7 +122,11 @@ brew list nowplaying-cli &>/dev/null && print_status "OK" "nowplaying-cli" || pr
 brew list sketchybar &>/dev/null && print_status "OK" "sketchybar" || print_status "FAIL" "sketchybar"
 brew list --cask font-jetbrains-mono-nerd-font &>/dev/null && print_status "OK" "font-jetbrains-mono-nerd-font" || print_status "FAIL" "font-jetbrains-mono-nerd-font"
 brew list --cask font-sketchybar-app-font &>/dev/null && print_status "OK" "font-sketchybar-app-font" || print_status "FAIL" "font-sketchybar-app-font"
-[ -f "$SCRIPT_DIR/config/icon_map.lua" ] && print_status "OK" "icon_map.lua" || print_status "FAIL" "icon_map.lua"
+if [ -f "$SCRIPT_DIR/config/icon_map_generated.lua" ] || [ -f "$SCRIPT_DIR/config/icon_map_fallback.lua" ]; then
+    print_status "OK" "icon_map (generated/fallback)"
+else
+    print_status "FAIL" "icon_map (generated/fallback)"
+fi
 [ -f "$SBARLUA_SO" ] && print_status "OK" "SbarLua" || print_status "FAIL" "SbarLua"
 [ -f "$SCRIPT_DIR/helpers/menus/bin/menus" ] && print_status "OK" "menus" || print_status "FAIL" "menus"
 [ -f "$SCRIPT_DIR/helpers/event_providers/cpu_load/bin/cpu_load" ] && print_status "OK" "cpu_load" || print_status "FAIL" "cpu_load"

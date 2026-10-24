@@ -10,7 +10,7 @@ local function create_app_widget(app_name, bundle_id)
         position = "right",
         icon = {
             font = "sketchybar-app-font:Regular:16.0",
-            string = icon_map[app_name],
+            string = icon_map[app_name] or icon_map["Default"],
             color = colors.palette.white,
         },
         update_freq = 5,
