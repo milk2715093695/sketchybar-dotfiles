@@ -23,7 +23,9 @@ local function add_popup_item(args)
     })
 
     if subscribe_click then
-        item:subscribe("mouse.clicked", function(_)
+        item:subscribe("mouse.clicked", function(env)
+            if env.BUTTON ~= "left" then return end
+
             sbar.exec(click_cmd)
             parent:set({ popup = { drawing = false } })
         end)
@@ -70,7 +72,8 @@ local apple_logo = sbar.add("item", "left.apple.logo", {
 })
 
 -- 点击切换 popup 状态
-apple_logo:subscribe("mouse.clicked", function(_)
+apple_logo:subscribe("mouse.clicked", function(env)
+    if env.BUTTON ~= "left" then return end
     apple_logo:set({ popup = { drawing = "toggle" } })
 end)
 
