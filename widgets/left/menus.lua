@@ -2,14 +2,7 @@ local colors = require("config.colors")        -- 加载颜色配置
 local settings = require("config.settings")    -- 加载设置配置
 local icons = require("config.icons")          -- 加载图标配置
 
-local aerospace = package.loaded["widgets.left.aero_ws"]
-    or { refresh = function() end, show = function() end }
-
--- 菜单管理器
-local menu_manager = sbar.add("item", {
-    drawing = false,
-    updates = false,
-})
+local ui_mode = require("helpers.ui_mode")
 
 -- 菜单项初始化
 local max_items = settings.max_menus
@@ -70,13 +63,15 @@ local switch_button = sbar.add("item", {
 -- 刷新菜单函数
 local function refresh_menus()
     sbar.exec(settings.menus_bin .. " -l", function(menus)
+        local visible = not ui_mode.has("spaces") or ui_mode.is("menus")
+
         sbar.set('/left\\.menu\\..*/', { drawing = false })
-        menu_padding:set({ drawing = true })
+        menu_padding:set({ drawing = visible })
 
         local id = 1
         for menu in string.gmatch(menus, '[^\r\n]+') do
             if id <= max_items then
-                menu_items[id]:set({ label = menu, drawing = true })
+                menu_items[id]:set({ label = menu, drawing = visible })
             else
                 break
             end
@@ -85,31 +80,28 @@ local function refresh_menus()
     end)
 end
 
--- 监听前台应用切换
-menu_manager:subscribe("front_app_switched", refresh_menus)
+-- 监听前台应用切换：订阅挂在首个菜单项上，菜单可见时才收到事件
+menu_items[1]:subscribe("front_app_switched", function()
+    if ui_mode.has("spaces") and not ui_mode.is("menus") then return end
+
+    refresh_menus()
+end)
+
+-- 根据模式同步菜单显隐与切换图标
+ui_mode.subscribe(function(mode)
+    switch_button:set({ icon = mode == "spaces" and icons.switch.on or icons.switch.off })
+
+    if mode == "menus" then
+        refresh_menus()
+    else
+        sbar.set("/left\\.menu\\..*/", { drawing = false })
+        menu_padding:set({ drawing = false })
+    end
+end)
 
 -- 切换按钮事件处理
 switch_button:subscribe("swap_menus_and_spaces", function()
-    local showing_menus = menu_items[1]:query().geometry.drawing == "on"
-
-    if showing_menus then
-        menu_manager:set({ updates = false })
-        sbar.set("/left\\.menu\\..*/", { drawing = false })
-
-        -- 展开工作区：按缓存数据直接显示，refresh 异步兜底纠正残留图标
-        aerospace.show()
-        aerospace.refresh()
-    else
-        menu_manager:set({ updates = true })
-
-        -- 收起工作区
-        sbar.set("/left\\.aero_workspace\\..*/", { drawing = false })
-        refresh_menus()
-    end
-
-    -- 切换图标
-    local currently_on = switch_button:query().icon.value == icons.switch.on
-    switch_button:set({ icon = currently_on and icons.switch.off or icons.switch.on })
+    ui_mode.toggle()
 end)
 
 -- 鼠标点击触发切换
@@ -118,10 +110,16 @@ switch_button:subscribe("mouse.clicked", function()
 end)
 
 -- 监听工作区切换事件
-switch_button:subscribe("aerospace_workspace_change", function(env)
-    menu_manager:set({ updates = false })
-    sbar.set("/left\\.menu\\..*/", { drawing = false })
-    switch_button:set({ icon = icons.switch.off })
+switch_button:subscribe("aerospace_workspace_change", function()
+    if ui_mode.has("spaces") then
+        ui_mode.set("spaces")
+    end
 end)
 
-return menu_manager
+-- 配置加载完成后判断是否存在工作区视图：没有则隐藏切换按钮，菜单常显
+sbar.exec("true", function()
+    if ui_mode.has("spaces") then return end
+
+    switch_button:set({ drawing = false })
+    refresh_menus()
+end)

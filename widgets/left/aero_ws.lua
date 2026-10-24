@@ -1,9 +1,8 @@
-local colors = require("config.colors")        -- 加载颜色配置
-local settings = require("config.settings")    -- 加载设置配置
-local icon_map = require("config.icon_map")  	-- 加载应用图标配置
-local json = require("helpers.lunajson.lunajson")	-- 加载 json 解析库
-
-local M = {}
+local colors = require("config.colors")            -- 加载颜色配置
+local settings = require("config.settings")        -- 加载设置配置
+local icon_map = require("config.icon_map")        -- 加载应用图标配置
+local json = require("helpers.lunajson.lunajson")  -- 加载 json 解析库
+local ui_mode = require("helpers.ui_mode")         -- 加载 UI 模式状态
 
 local workspace_items = {}
 local workspace_data = {
@@ -14,11 +13,8 @@ local workspace_data = {
 }
 local last_workspace = nil
 
-local get_all_ws = "aerospace list-workspaces --all --format '%{workspace}%{monitor-appkit-nsscreen-screens-id}' --json"
-local get_focused_ws = "aerospace list-workspaces --focused --json"
--- 命令含 %{...} 格式符，不能过 string.format（会把 %{ 当转换符），拆开拼接
-local get_ws_windows = "aerospace list-windows --workspace "
-local get_ws_windows_suffix = " --format '%{app-name}' --json"
+local get_all_ws = "aerospace list-workspaces --all --format '%{workspace} %{monitor-appkit-nsscreen-screens-id} %{workspace-is-focused}' --json"
+local get_all_windows = "aerospace list-windows --all --format '%{workspace} %{app-name}' --json"
 
 -- 协程辅助函数
 local function async_exec(cmd)
@@ -53,6 +49,8 @@ end
 
 -- 更新单个 workspace 显示
 local function update_workspace(ws_id, workspace_data)
+    if not ui_mode.is("spaces") then return end
+
     local monitor_id = workspace_data.monitor_map[ws_id] or 1
     local open_windows = workspace_data.ws_windows[ws_id] or {}
     local is_empty = #open_windows == 0
@@ -75,9 +73,8 @@ local function update_workspace(ws_id, workspace_data)
         local icons_to_show = {}
 
         for _, app in ipairs(open_windows) do
-            local icon = icon_map[app] or icon_map["Default"]
-
-            if not seen[icon] then
+            if not seen[app] then
+                seen[app] = true
                 count = count + 1
 
                 if count > max_icons then
@@ -85,8 +82,7 @@ local function update_workspace(ws_id, workspace_data)
                     break
                 end
 
-                table.insert(icons_to_show, icon)
-                seen[icon] = true
+                table.insert(icons_to_show, icon_map[app] or icon_map["Default"])
             end
         end
 
@@ -110,57 +106,43 @@ local function update_workspace(ws_id, workspace_data)
     end
 end
 
--- 拉取指定 workspace 的窗口列表并刷新该 workspace 显示
-local function refresh_ws(ws_id)
-    coroutine.wrap(function()
-        if not workspace_items[ws_id] then return end
-
-        -- pcall 只包可能抛错的异步执行；命令失败时 result 是错误字符串，ipairs 前必须判型
-        local ok, result = pcall(async_exec, get_ws_windows .. ws_id .. get_ws_windows_suffix)
-        if not ok or type(result) ~= "table" then return end
-
-        local seen, apps = {}, {}
-        for _, win in ipairs(result) do
-            local app = win["app-name"]
-            if app and not seen[app] then
-                seen[app] = true
-                apps[#apps + 1] = app
-            end
-        end
-        workspace_data.ws_windows[ws_id] = apps
-        update_workspace(ws_id, workspace_data)
-    end)()
-end
-
--- 全量刷新：初始加载、显示器变化等低频场景
+-- 全量刷新：初始加载、切换 workspace、显示器变化等
 local function refresh_workspace_data()
     coroutine.wrap(function()
         local all_ws = async_exec(get_all_ws)
         if type(all_ws) ~= "table" then return end
 
-        local monitor_map = {}
-        for _, ws in ipairs(all_ws) do
-            monitor_map[ws.workspace] = math.floor(ws["monitor-appkit-nsscreen-screens-id"])
-        end
-        workspace_data.monitor_map = monitor_map
+        local windows = async_exec(get_all_windows)
+        if type(windows) ~= "table" then return end
 
-        local focused = async_exec(get_focused_ws)
-        if type(focused) == "table" and #focused > 0 then
-            workspace_data.focused_ws = focused[1].workspace
+        local monitor_map, ws_windows, focused_ws = {}, {}, nil
+        for _, ws in ipairs(all_ws) do
+            local ws_id = ws.workspace
+            monitor_map[ws_id] = math.floor(ws["monitor-appkit-nsscreen-screens-id"])
+            ws_windows[ws_id] = {}
+            if ws["workspace-is-focused"] then focused_ws = ws_id end
         end
+
+        local seen = {}
+        for _, win in ipairs(windows) do
+            local ws_id, app = win.workspace, win["app-name"]
+            if ws_windows[ws_id] and app then
+                seen[ws_id] = seen[ws_id] or {}
+                if not seen[ws_id][app] then
+                    seen[ws_id][app] = true
+                    table.insert(ws_windows[ws_id], app)
+                end
+            end
+        end
+
+        workspace_data.monitor_map = monitor_map
+        workspace_data.ws_windows = ws_windows
+        if focused_ws then workspace_data.focused_ws = focused_ws end
 
         for ws_id in pairs(workspace_items) do
-            refresh_ws(ws_id)
+            update_workspace(ws_id, workspace_data)
         end
     end)()
-end
-
--- 按缓存数据同步决定所有 workspace 的显示状态（不等待异步刷新）
--- 供 menus.lua 收起菜单时调用，避免先全绘再隐藏空 workspace 的闪烁
-local function show_workspaces()
-    for ws_id in pairs(workspace_items) do
-        update_workspace(ws_id, workspace_data)
-    end
 end
 
 -- 处理 aerospace subscribe 推送的增量事件
@@ -184,7 +166,6 @@ local function handle_aerospace_event(env)
         -- subscribe 无窗口关闭事件：切换时全量扫描兜底，纠正所有 workspace 的残留图标
         refresh_workspace_data()
     elseif evt._event == "window-detected" then
-        -- XXX: 窗口图标按 icon 去重，多个 app 共用同一 icon 时后到的被吞
         local apps = workspace_data.ws_windows[evt.workspace] or {}
         local found = false
         for _, app in ipairs(apps) do
@@ -202,18 +183,16 @@ local function handle_aerospace_event(env)
             end
         end
     elseif evt._event == "focus-changed" then
-        -- XXX: 无窗口关闭事件，焦点重排时兜底刷新；焦点窗口关闭时事件早于窗口销毁，
+        -- XXX: 无窗口关闭事件，焦点重排时兜底全量刷新；焦点窗口关闭时事件早于窗口销毁，
         --      可能拉到中间态（图标残留），下次切换纠正（见下方总述）
-        if evt.workspace then
-            refresh_ws(evt.workspace)
-        end
+        refresh_workspace_data()
     elseif evt._event == "focused-monitor-changed" then
         refresh_workspace_data()
     end
 end
 
 -- XXX: subscribe 无 window-removed 事件（aerospace 0.21 事件全集），窗口状态机做不到纯增量。
---      切换时全量扫描兜底，focus-changed 时 scoped 拉取兜底；拉取失败则保留旧图标（宁可旧不错）
+--      切换 / 焦点变化时全量快照兜底；拉取失败则保留旧图标（宁可旧不错）
 
 -- 创建 workspace item，进行初始化时阻塞以确保加载顺序
 local function init_workspace_items()
@@ -248,7 +227,7 @@ local function init_workspace_items()
                 padding_right = 10,
             },
             background = { color = colors.bg.bg1 },
-            click_script = "aerospace workspace " .. ws_id,
+            click_script = string.format("aerospace workspace %q", ws_id),
         })
 
         workspace_items[ws_id] = ws_item
@@ -289,10 +268,16 @@ refresh_item:subscribe("aerospace_event", handle_aerospace_event)
 
 refresh_item:subscribe("display_change", refresh_workspace_data)
 
+ui_mode.register("spaces")
+
+ui_mode.subscribe(function(mode)
+    if mode == "spaces" then
+        refresh_workspace_data()
+    else
+        sbar.set("/left\\.aero_workspace\\..*/", { drawing = false })
+    end
+end)
+
 -- 初始化 workspace 数据
 init_workspace_items()
 refresh_workspace_data()
-
-M.show = show_workspaces
-M.refresh = refresh_workspace_data
-return M
