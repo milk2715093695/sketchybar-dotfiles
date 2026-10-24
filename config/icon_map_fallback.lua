@@ -1,6 +1,3 @@
--- sketchybar-app-font v3.0.12 快照（fallback）
--- 优先使用 config.icon_map_generated；本文件只在生成物缺失/损坏时兜底
--- 刷新：./install_sketchybar.sh --icons-only 后把 generated 的内容复制过来
 return {
 	[ [[Live]] ] = ":ableton:",
 	[ [[Accessibility Reader]] ] = ":accessibility_reader:",
