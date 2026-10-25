@@ -89,6 +89,7 @@ local function refresh_volume()
     end)
 end
 
+-- macOS 调音量会自动解除静音，所以这里不能沿用旧的 muted 状态
 volume_item:subscribe("volume_change", function(env)
     render_volume(tonumber(env.INFO), false)
 end)
