@@ -7,7 +7,7 @@ local workspace_items = {}
 local workspace_data = {
     monitor_map = {},
     focused_ws = nil,
-    ws_windows = {}
+    apps_by_ws = {}
 }
 local last_workspace = nil
 
@@ -47,15 +47,15 @@ local function unhighlight_ws(ws_id)
 end
 
 -- 更新单个 workspace 显示
-local function update_workspace(ws_id, workspace_data)
+local function update_workspace(ws_id, snapshot)
     if not ui_mode.is("spaces") then return end
 
-    local monitor_id = workspace_data.monitor_map[ws_id] or 1
-    local open_windows = workspace_data.ws_windows[ws_id] or {}
-    local is_empty = #open_windows == 0
+    local monitor_id = snapshot.monitor_map[ws_id] or 1
+    local apps = snapshot.apps_by_ws[ws_id] or {}
+    local is_empty = #apps == 0
 
     -- 用于初始化后初次显示
-    if not last_workspace and workspace_data.focused_ws == ws_id then
+    if not last_workspace and snapshot.focused_ws == ws_id then
         last_workspace = ws_id
         highlight_ws(ws_id)
         workspace_items[ws_id]:set({
@@ -71,7 +71,7 @@ local function update_workspace(ws_id, workspace_data)
         local max_icons = settings.max_icons_per_ws
         local icons_to_show = {}
 
-        for _, app in ipairs(open_windows) do
+        for _, app in ipairs(apps) do
             if not seen[app] then
                 seen[app] = true
                 count = count + 1
@@ -94,7 +94,7 @@ local function update_workspace(ws_id, workspace_data)
     end
 
     -- 空 workspace
-    if workspace_data.focused_ws == ws_id then
+    if snapshot.focused_ws == ws_id then
         workspace_items[ws_id]:set({
             drawing = true,
             label = { string = '-' },
@@ -119,28 +119,28 @@ local function refresh_workspace_data()
         local windows = async_exec(get_all_windows)
         if seq ~= refresh_seq or type(windows) ~= "table" then return end
 
-        local monitor_map, ws_windows, focused_ws = {}, {}, nil
+        local monitor_map, apps_by_ws, focused_ws = {}, {}, nil
         for _, ws in ipairs(all_ws) do
             local ws_id = ws.workspace
             monitor_map[ws_id] = math.floor(ws["monitor-appkit-nsscreen-screens-id"])
-            ws_windows[ws_id] = {}
+            apps_by_ws[ws_id] = {}
             if ws["workspace-is-focused"] then focused_ws = ws_id end
         end
 
         local seen = {}
         for _, win in ipairs(windows) do
             local ws_id, app = win.workspace, win["app-name"]
-            if ws_windows[ws_id] and app then
+            if apps_by_ws[ws_id] and app then
                 seen[ws_id] = seen[ws_id] or {}
                 if not seen[ws_id][app] then
                     seen[ws_id][app] = true
-                    table.insert(ws_windows[ws_id], app)
+                    table.insert(apps_by_ws[ws_id], app)
                 end
             end
         end
 
         workspace_data.monitor_map = monitor_map
-        workspace_data.ws_windows = ws_windows
+        workspace_data.apps_by_ws = apps_by_ws
         if focused_ws then workspace_data.focused_ws = focused_ws end
 
         for ws_id in pairs(workspace_items) do
@@ -168,7 +168,7 @@ local function handle_aerospace_event(env)
         if last_workspace and last_workspace ~= evt.workspace then
             unhighlight_ws(last_workspace)
             -- 空 workspace 失焦后要隐藏，否则 '-' 指示符残留
-            if #(workspace_data.ws_windows[last_workspace] or {}) == 0 then
+            if #(workspace_data.apps_by_ws[last_workspace] or {}) == 0 then
                 workspace_items[last_workspace]:set({ drawing = false })
             end
         end
@@ -179,7 +179,7 @@ local function handle_aerospace_event(env)
         -- subscribe 无窗口关闭事件：切换时全量扫描兜底，纠正所有 workspace 的残留图标
         refresh_workspace_data()
     elseif evt._event == "window-detected" then
-        local apps = workspace_data.ws_windows[evt.workspace] or {}
+        local apps = workspace_data.apps_by_ws[evt.workspace] or {}
         local found = false
         for _, app in ipairs(apps) do
             if app == evt.appName then
@@ -190,7 +190,7 @@ local function handle_aerospace_event(env)
 
         if not found then
             table.insert(apps, evt.appName)
-            workspace_data.ws_windows[evt.workspace] = apps
+            workspace_data.apps_by_ws[evt.workspace] = apps
             if workspace_items[evt.workspace] then
                 update_workspace(evt.workspace, workspace_data)
             end
@@ -211,11 +211,11 @@ end
 local function init_workspace_items()
     local ok, ws_ids = pcall(function()
         local handle = io.popen(get_ws_ids)
-        local data = handle:read("*a")
+        local output = handle:read("*a")
         handle:close()
 
         local ids = {}
-        for line in data:gmatch("[^\r\n]+") do
+        for line in output:gmatch("[^\r\n]+") do
             ids[#ids + 1] = line
         end
         return ids
