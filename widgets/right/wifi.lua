@@ -1,7 +1,7 @@
-local icons = require("config.icons")          -- 加载图标配置
+local icons = require("config.icons")           -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
-local spacer = require("helpers.spacer")       -- 统一间距 spacer
+local spacer = require("helpers.spacer")        -- 统一间距 spacer
 
 sbar.exec("pkill -f 'network_load.*network_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load " .. settings.network.interface .. " network_update 2.0")
 

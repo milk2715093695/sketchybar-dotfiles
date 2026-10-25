@@ -1,6 +1,6 @@
-local settings = require("config.settings")    -- 加载设置配置
-local colors = require("config.colors")        -- 加载颜色配置
-local spacer = require("helpers.spacer")       -- 统一间距 spacer
+local settings = require("config.settings") -- 加载设置配置
+local colors = require("config.colors")     -- 加载颜色配置
+local spacer = require("helpers.spacer")    -- 统一间距 spacer
 
 local cal = sbar.add("item", "right.calendar", {
     icon = {

@@ -1,6 +1,6 @@
-local colors = require("config.colors")        -- 加载颜色配置
-local icon_map = require("config.icon_map")    -- 加载图标配置
-local spacer = require("helpers.spacer")       -- 统一间距 spacer
+local colors = require("config.colors")         -- 加载颜色配置
+local icon_map = require("config.icon_map")     -- 加载图标配置
+local spacer = require("helpers.spacer")        -- 统一间距 spacer
 
 local M = {}
 

@@ -1,5 +1,5 @@
-local icons = require("config.icons")        -- 加载图标配置
-local colors = require("config.colors")       -- 加载颜色配置
+local icons = require("config.icons")       -- 加载图标配置
+local colors = require("config.colors")     -- 加载颜色配置
 
 local whitelist = { ["Spotify"] = true,
                     ["Music"] = true }
