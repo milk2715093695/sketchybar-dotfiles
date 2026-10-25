@@ -56,29 +56,41 @@ local volume_slider = sbar.add("slider", popup_width, {
     click_script = 'osascript -e "set volume output volume $PERCENTAGE"'
 })
 
-volume_item:subscribe("volume_change", function(env)
-    local volume = tonumber(env.INFO)
-    local icon = icons.volume._0
-    if volume > 60 then
-        icon = icons.volume._100
-    elseif volume > 30 then
-        icon = icons.volume._66
-    elseif volume > 10 then
-        icon = icons.volume._33
-    elseif volume > 0 then
-        icon = icons.volume._10
+local function render_volume(volume, muted)
+    local icon = icons.volume.mute
+    if not muted then
+        icon = icons.volume._0
+        if volume > 60 then
+            icon = icons.volume._100
+        elseif volume > 30 then
+            icon = icons.volume._66
+        elseif volume > 10 then
+            icon = icons.volume._33
+        elseif volume > 0 then
+            icon = icons.volume._10
+        end
     end
 
-    local lead = ""
-    if volume < 10 then
-        lead = "0"
-    end
-
+    local color = muted and colors.palette.muted or colors.palette.white
+    local lead = volume < 10 and "0" or ""
     volume_item:set({
-        icon = { string = icon },
-        label = { string = lead .. volume .. "%" },
+        icon = { string = icon, color = color },
+        label = { string = lead .. volume .. "%", color = color },
     })
     volume_slider:set({ slider = { percentage = volume } })
+end
+
+local function refresh_volume()
+    sbar.exec([[osascript -e 'set v to output volume of (get volume settings)' -e 'set m to output muted of (get volume settings)' -e 'return (v as string) & "|" & (m as string)']], function(result)
+        local volume, muted = result:match("(%d+)|(%a+)")
+        if volume then
+            render_volume(tonumber(volume), muted == "true")
+        end
+    end)
+end
+
+volume_item:subscribe("volume_change", function(env)
+    render_volume(tonumber(env.INFO), false)
 end)
 
 local function volume_collapse_details()
@@ -91,7 +103,7 @@ end
 local current_audio_device = "None"
 local function volume_toggle_details(env)
     if env.BUTTON == "right" then
-        sbar.exec("open /System/Library/PreferencePanes/Sound.prefpane")
+        sbar.exec("osascript -e 'set volume output muted not (output muted of (get volume settings))'", refresh_volume)
         return
     end
 
@@ -137,3 +149,5 @@ end
 volume_item:subscribe("mouse.clicked", volume_toggle_details)
 volume_item:subscribe("mouse.scrolled", volume_scroll)
 volume_item:subscribe("mouse.exited.global", volume_collapse_details)
+
+refresh_volume()

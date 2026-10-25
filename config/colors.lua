@@ -11,6 +11,7 @@ colors.palette = {
     orange      = 0xFFFF9E64,
     magenta     = 0xFFBB9AF7,
     grey        = 0xFF414868,
+    muted       = 0xFF565F89,
     transparent = 0x00000000,
 }
 
