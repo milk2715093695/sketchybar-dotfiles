@@ -13,6 +13,14 @@ return {
         service   = "Wi-Fi",    -- networksetup 中的服务名
     },
 
+    -- 社交 App（依赖 LaunchServices StatusLabel）
+    social = {
+        apps = {
+            { id = "wechat", bundle = "com.tencent.xinWeChat", icon = "WeChat" },
+            { id = "qq",     bundle = "com.tencent.qq",        icon = "QQ" },
+        },
+    },
+
     -- 布局配置
     layout = {
         left = {
