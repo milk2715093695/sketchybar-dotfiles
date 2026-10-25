@@ -2,6 +2,10 @@ local colors = require("config.colors")        -- 加载颜色配置
 local icons = require("config.icons")          -- 加载图标配置
 local settings = require("config.settings")    -- 加载设置配置
 
+local menus_file = io.open("helpers/menus/bin/menus", "r")
+local menus_available = menus_file ~= nil
+if menus_file then menus_file:close() end
+
 -- 添加弹出框项
 local function add_popup_item(args)
     local parent = args.parent
@@ -149,14 +153,16 @@ add_popup_item({
     subscribe_click = true,
 })
 
--- 分割线
-add_divider({ parent = apple_logo })
+if menus_available then
+    -- 分割线
+    add_divider({ parent = apple_logo })
 
--- 子条目 8：调用原生菜单
-add_popup_item({
-    parent = apple_logo,
-    icon_str = icons.apple,
-    label_str = "原生菜单",
-    click_cmd = settings.menus_bin .. " -s 0",
-    subscribe_click = true,
-})
+    -- 子条目 8：调用原生菜单
+    add_popup_item({
+        parent = apple_logo,
+        icon_str = icons.apple,
+        label_str = "原生菜单",
+        click_cmd = settings.menus_bin .. " -s 0",
+        subscribe_click = true,
+    })
+end
