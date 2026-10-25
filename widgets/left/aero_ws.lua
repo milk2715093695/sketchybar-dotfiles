@@ -2,6 +2,7 @@ local colors = require("config.colors")            -- 加载颜色配置
 local settings = require("config.settings")        -- 加载设置配置
 local icon_map = require("config.icon_map")        -- 加载应用图标配置
 local ui_mode = require("helpers.ui_mode")         -- 加载 UI 模式状态
+local shell = require("helpers.shell")             -- 加载 shell 转义工具
 
 local workspace_items = {}
 local workspace_data = {
@@ -249,10 +250,17 @@ local function init_workspace_items()
                 padding_right = 10,
             },
             background = { color = colors.bg.bg1 },
-            click_script = string.format("aerospace workspace %q", ws_id),
         })
 
         workspace_items[ws_id] = ws_item
+
+        ws_item:subscribe("mouse.clicked", function(env)
+            if env.BUTTON == "left" then
+                sbar.exec("aerospace workspace -- " .. shell.quote(ws_id))
+            elseif env.BUTTON == "right" then
+                sbar.exec("aerospace move-node-to-workspace -- " .. shell.quote(ws_id))
+            end
+        end)
 
         ws_item:subscribe("mouse.entered", function()
             workspace_items[ws_id]:set({
