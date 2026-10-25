@@ -34,6 +34,7 @@ local function create_app_widget(app_name, bundle_id)
     end)
 
     widget:subscribe("mouse.clicked", function(env)
+        if env.BUTTON ~= "left" then return end
         sbar.exec("open -b " .. bundle_id)
     end)
 

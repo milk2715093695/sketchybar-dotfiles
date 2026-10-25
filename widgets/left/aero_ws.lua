@@ -1,18 +1,17 @@
 local colors = require("config.colors")            -- 加载颜色配置
 local settings = require("config.settings")        -- 加载设置配置
 local icon_map = require("config.icon_map")        -- 加载应用图标配置
-local json = require("helpers.lunajson.lunajson")  -- 加载 json 解析库
 local ui_mode = require("helpers.ui_mode")         -- 加载 UI 模式状态
 
 local workspace_items = {}
 local workspace_data = {
-    all_ws = {},
     monitor_map = {},
     focused_ws = nil,
     ws_windows = {}
 }
 local last_workspace = nil
 
+local get_ws_ids = "aerospace list-workspaces --all --format '%{workspace}'"
 local get_all_ws = "aerospace list-workspaces --all --format '%{workspace} %{monitor-appkit-nsscreen-screens-id} %{workspace-is-focused}' --json"
 local get_all_windows = "aerospace list-windows --all --format '%{workspace} %{app-name}' --json"
 
@@ -145,6 +144,15 @@ local function refresh_workspace_data()
     end)()
 end
 
+-- AeroSpace 重启但 sketchybar 未重启时，清掉旧焦点状态并重新拉全量快照
+local function resync_workspace_data()
+    last_workspace = nil
+    for ws_id in pairs(workspace_items) do
+        unhighlight_ws(ws_id)
+    end
+    refresh_workspace_data()
+end
+
 -- 处理 aerospace subscribe 推送的增量事件
 local function handle_aerospace_event(env)
     -- SbarLua 已将 JSON env 值自动解析为 Lua 表
@@ -194,20 +202,29 @@ end
 -- XXX: subscribe 无 window-removed 事件（aerospace 0.21 事件全集），窗口状态机做不到纯增量。
 --      切换 / 焦点变化时全量快照兜底；拉取失败则保留旧图标（宁可旧不错）
 
--- 创建 workspace item，进行初始化时阻塞以确保加载顺序
+-- 创建 workspace item：同步取 ID 以保证加载顺序，完整数据由 refresh 异步填充
 local function init_workspace_items()
-    local ok, result = pcall(function()
-        local handle = io.popen(get_all_ws)
+    local ok, ws_ids = pcall(function()
+        local handle = io.popen(get_ws_ids)
         local data = handle:read("*a")
         handle:close()
-        return json.decode(data)
-    end)
-    if not ok then return end
-    
-    workspace_data.all_ws = result
-    for _, ws in ipairs(workspace_data.all_ws) do
-        local ws_id = ws.workspace
 
+        local ids = {}
+        for line in data:gmatch("[^\r\n]+") do
+            ids[#ids + 1] = line
+        end
+        return ids
+    end)
+    if not ok then
+        print("sketchybar: failed to query AeroSpace workspaces: " .. tostring(ws_ids))
+        return
+    end
+
+    if #ws_ids == 0 then
+        print("sketchybar: AeroSpace returned no workspaces")
+    end
+
+    for _, ws_id in ipairs(ws_ids) do
         local ws_item = sbar.add("item", "left.aero_workspace." .. ws_id ,{
             icon = {
                 string = ws_id,
@@ -265,6 +282,8 @@ local refresh_item = sbar.add("item", {
 })
 
 refresh_item:subscribe("aerospace_event", handle_aerospace_event)
+
+refresh_item:subscribe("aerospace_resync", resync_workspace_data)
 
 refresh_item:subscribe("display_change", refresh_workspace_data)
 
