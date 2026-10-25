@@ -2,6 +2,7 @@ local icons = require("config.icons")           -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
 local spacer = require("helpers.spacer")        -- 统一间距 spacer
+local shell = require("helpers.shell")          -- 加载 shell 转义
 
 sbar.exec("pkill -f 'network_load.*network_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load " .. settings.network.interface .. " network_update 2.0")
 
@@ -176,7 +177,7 @@ wifi_up:subscribe("network_update", function(env)
 end)
 
 wifi:subscribe({"wifi_change", "system_woke"}, function(env)
-    sbar.exec("ipconfig getifaddr " .. settings.network.interface, function(ip)
+    sbar.exec("ipconfig getifaddr " .. shell.quote(settings.network.interface), function(ip)
         local connected = not (ip == "")
         wifi:set({
             icon = {
@@ -198,16 +199,16 @@ local function toggle_details()
         sbar.exec("networksetup -getcomputername", function(result)
             hostname:set({ label = result })
         end)
-        sbar.exec("ipconfig getifaddr " .. settings.network.interface, function(result)
+        sbar.exec("ipconfig getifaddr " .. shell.quote(settings.network.interface), function(result)
             ip:set({ label = result })
         end)
-        sbar.exec("ipconfig getsummary " .. settings.network.interface .. " | awk -F ' SSID : '  '/ SSID : / {print $2}'", function(result)
+        sbar.exec("ipconfig getsummary " .. shell.quote(settings.network.interface) .. " | awk -F ' SSID : '  '/ SSID : / {print $2}'", function(result)
             ssid:set({ label = result })
         end)
-        sbar.exec("networksetup -getinfo " .. settings.network.service .. " | awk -F 'Subnet mask: ' '/^Subnet mask: / {print $2}'", function(result)
+        sbar.exec("networksetup -getinfo " .. shell.quote(settings.network.service) .. " | awk -F 'Subnet mask: ' '/^Subnet mask: / {print $2}'", function(result)
             mask:set({ label = result })
         end)
-        sbar.exec("networksetup -getinfo " .. settings.network.service .. " | awk -F 'Router: ' '/^Router: / {print $2}'", function(result)
+        sbar.exec("networksetup -getinfo " .. shell.quote(settings.network.service) .. " | awk -F 'Router: ' '/^Router: / {print $2}'", function(result)
             router:set({ label = result })
         end)
     else
@@ -222,7 +223,7 @@ wifi:subscribe("mouse.exited.global", hide_details)
 
 local function copy_label_to_clipboard(env)
     local label = sbar.query(env.NAME).label.value
-    sbar.exec("echo \"" .. label .. "\" | pbcopy")
+    sbar.exec("printf '%s' " .. shell.quote(label) .. " | pbcopy")
     sbar.set(env.NAME, { label = { string = icons.clipboard, align = "center" } })
     sbar.delay(1, function()
         sbar.set(env.NAME, { label = { string = label, align = "right" } })

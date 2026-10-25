@@ -2,6 +2,7 @@ local colors = require("config.colors")         -- 加载颜色配置
 local icons = require("config.icons")           -- 加载图标配置
 local settings = require("config.settings")     -- 加载设置配置
 local spacer = require("helpers.spacer")        -- 统一间距 spacer
+local shell = require("helpers.shell")          -- 加载 shell 转义
 
 local popup_width = 250
 
@@ -131,7 +132,9 @@ local function volume_toggle_details(env)
                         width = popup_width,
                         align = "center",
                         label = { string = device, color = color },
-                        click_script = 'SwitchAudioSource -s "' .. device .. '" && sketchybar --set /volume.device\\.*/ label.color=' .. colors.palette.grey .. ' --set $NAME label.color=' .. colors.palette.white,
+                        click_script = "SwitchAudioSource -s " .. shell.quote(device) ..
+                            " && sketchybar --set /volume.device\\.*/ label.color=" .. colors.palette.grey ..
+                            " --set $NAME label.color=" .. colors.palette.white,
                     })
                     counter = counter + 1
                 end
