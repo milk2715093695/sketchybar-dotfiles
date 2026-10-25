@@ -106,13 +106,18 @@ local function update_workspace(ws_id, workspace_data)
 end
 
 -- 全量刷新：初始加载、切换 workspace、显示器变化等
+local refresh_seq = 0
+
 local function refresh_workspace_data()
+    refresh_seq = refresh_seq + 1
+    local seq = refresh_seq
+
     coroutine.wrap(function()
         local all_ws = async_exec(get_all_ws)
-        if type(all_ws) ~= "table" then return end
+        if seq ~= refresh_seq or type(all_ws) ~= "table" then return end
 
         local windows = async_exec(get_all_windows)
-        if type(windows) ~= "table" then return end
+        if seq ~= refresh_seq or type(windows) ~= "table" then return end
 
         local monitor_map, ws_windows, focused_ws = {}, {}, nil
         for _, ws in ipairs(all_ws) do
