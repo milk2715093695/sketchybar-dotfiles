@@ -62,7 +62,12 @@ local volume_slider = sbar.add("slider", popup_width, {
             color = colors.bg.bg1,
         },
         knob = {
-            string = "􀀁",
+            string = "●",
+            font = {
+                family = settings.font.text,
+                style = settings.font.style_map["Regular"],
+                size = 10.0,
+            },
             drawing = true,
         },
     },
