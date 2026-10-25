@@ -33,6 +33,8 @@
 
 `install_sketchybar.sh` 负责安装依赖、构建 helper、同步 icon map 和检查 SbarLua；不负责创建 `~/.config/sketchybar` 链接、备份旧配置或启动 bar。
 
+字体升级后，可只刷新 icon map：`bash install_sketchybar.sh --icons-only`。
+
 ### 一键安装
 
 ```bash
