@@ -256,11 +256,12 @@ local function init_workspace_items()
         workspace_items[ws_id] = ws_item
 
         ws_item:subscribe("mouse.clicked", function(env)
-            if env.BUTTON == "left" then
-                sbar.exec("aerospace workspace -- " .. shell.quote(ws_id))
-            elseif env.BUTTON == "right" then
+            if env.BUTTON == "right" then
                 sbar.exec("aerospace move-node-to-workspace -- " .. shell.quote(ws_id))
+                return
             end
+            if env.BUTTON ~= "left" then return end
+            sbar.exec("aerospace workspace -- " .. shell.quote(ws_id))
         end)
 
         ws_item:subscribe("mouse.entered", function()

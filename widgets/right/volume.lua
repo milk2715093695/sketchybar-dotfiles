@@ -106,6 +106,7 @@ local function volume_toggle_details(env)
         sbar.exec("osascript -e 'set volume output muted not (output muted of (get volume settings))'", refresh_volume)
         return
     end
+    if env.BUTTON ~= "left" then return end
 
     local should_draw = volume_item:query().popup.drawing == "off"
     if should_draw then
