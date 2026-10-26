@@ -81,7 +81,7 @@ bash sketchybar-dotfiles/install_sketchybar.sh
 
 - AeroSpace 当前没有 window-removed 事件；后台关闭窗口或把窗口移到其他 workspace 后，图标可能残留，切换 workspace 或执行 `sketchybar --trigger aerospace_resync` 后纠正。
 - 空 workspace 默认隐藏；当前聚焦的空 workspace 显示 `-`。
-- 新增 AeroSpace workspace 后需要 reload sketchybar，workspace item 才会创建。
+- AeroSpace workspace 集合与顺序会自动同步，新增/删除 workspace 不需要 reload sketchybar。
 - media widget 默认关闭，需要在 `config/settings.lua` 中启用。
 - `subscribe_forward.sh` 没有自动重启；forwarder 意外退出后，事件转发会停止，需要重启 AeroSpace 或手动恢复。
 
