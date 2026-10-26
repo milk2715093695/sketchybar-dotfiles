@@ -11,7 +11,6 @@ local volume_item = sbar.add("item", "right.volume", {
     position = "right",
     icon = {
         string = icons.volume._100,
-        width = 25,
         align = "left",
         color = colors.palette.white,
     },
