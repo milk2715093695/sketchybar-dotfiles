@@ -10,7 +10,6 @@ local workspace_data = {
     focused_ws = nil,
     apps_by_ws = {}
 }
-local last_workspace = nil
 
 local get_ws_ids = "aerospace list-workspaces --all --format '%{workspace}'"
 local get_all_ws = "aerospace list-workspaces --all --format '%{workspace} %{monitor-appkit-nsscreen-screens-id} %{workspace-is-focused}' --json"
@@ -25,28 +24,6 @@ local function async_exec(cmd)
     return coroutine.yield()
 end
 
--- 高亮 / 取消高亮指定 workspace
--- 定义在 update_workspace 之前：init 刷新链可能在模块加载期间同步执行，local 前向引用会崩
-local function highlight_ws(ws_id)
-    if not workspace_items[ws_id] then return end
-
-    workspace_items[ws_id]:set({
-        icon = { highlight = true },
-        label = { highlight = true },
-        background = { border_color = colors.aerospace.hover_border_color },
-    })
-end
-
-local function unhighlight_ws(ws_id)
-    if not workspace_items[ws_id] then return end
-
-    workspace_items[ws_id]:set({
-        icon = { highlight = false },
-        label = { highlight = false },
-        background = { border_color = colors.aerospace.border_color },
-    })
-end
-
 -- 更新单个 workspace 显示
 local function update_workspace(ws_id, snapshot)
     if not ui_mode.is("spaces") then return end
@@ -54,16 +31,10 @@ local function update_workspace(ws_id, snapshot)
     local monitor_id = snapshot.monitor_map[ws_id] or 1
     local apps = snapshot.apps_by_ws[ws_id] or {}
     local is_empty = #apps == 0
-
-    -- 用于初始化后初次显示
-    if not last_workspace and snapshot.focused_ws == ws_id then
-        last_workspace = ws_id
-        highlight_ws(ws_id)
-        workspace_items[ws_id]:set({
-            drawing = true,
-            display = monitor_id,
-        })
-    end
+    local focused = snapshot.focused_ws == ws_id
+    local border_color = focused
+        and colors.aerospace.hover_border_color
+        or colors.aerospace.border_color
 
     -- 非空 workspace
     if not is_empty then
@@ -88,21 +59,43 @@ local function update_workspace(ws_id, snapshot)
 
         workspace_items[ws_id]:set({
             drawing = true,
-            label = { string = table.concat(icons_to_show, " ") },
+            icon = { highlight = focused },
+            label = {
+                string = table.concat(icons_to_show, " "),
+                highlight = focused,
+            },
             display = monitor_id,
+            background = { border_color = border_color },
         })
         return
     end
 
     -- 空 workspace
-    if snapshot.focused_ws == ws_id then
+    if focused then
         workspace_items[ws_id]:set({
             drawing = true,
-            label = { string = '-' },
+            icon = { highlight = true },
+            label = { string = "-", highlight = true },
             display = monitor_id,
+            background = { border_color = colors.aerospace.hover_border_color },
         })
     else
         workspace_items[ws_id]:set({ drawing = false })
+    end
+end
+
+-- 切换 workspace 后用户应先看到高亮立即移动，不等异步快照；事件已代表切换成功，快照只做校正。
+local function update_focus(new_ws, prev_ws)
+    if not new_ws or new_ws == workspace_data.focused_ws then return end
+
+    prev_ws = prev_ws or workspace_data.focused_ws
+    workspace_data.focused_ws = new_ws
+
+    if prev_ws and workspace_items[prev_ws] then
+        update_workspace(prev_ws, workspace_data)
+    end
+    if workspace_items[new_ws] then
+        update_workspace(new_ws, workspace_data)
     end
 end
 
@@ -152,10 +145,7 @@ end
 
 -- AeroSpace 重启但 sketchybar 未重启时，清掉旧焦点状态并重新拉全量快照
 local function resync_workspace_data()
-    last_workspace = nil
-    for ws_id in pairs(workspace_items) do
-        unhighlight_ws(ws_id)
-    end
+    workspace_data.focused_ws = nil
     refresh_workspace_data()
 end
 
@@ -166,17 +156,7 @@ local function handle_aerospace_event(env)
     if not evt or not evt._event then return end
 
     if evt._event == "focused-workspace-changed" then
-        if last_workspace and last_workspace ~= evt.workspace then
-            unhighlight_ws(last_workspace)
-            -- 空 workspace 失焦后要隐藏，否则 '-' 指示符残留
-            if #(workspace_data.apps_by_ws[last_workspace] or {}) == 0 then
-                workspace_items[last_workspace]:set({ drawing = false })
-            end
-        end
-
-        last_workspace = evt.workspace
-        workspace_data.focused_ws = evt.workspace
-        highlight_ws(evt.workspace)
+        update_focus(evt.workspace, evt.prevWorkspace)
         -- subscribe 无窗口关闭事件：切换时全量扫描兜底，纠正所有 workspace 的残留图标
         refresh_workspace_data()
     elseif evt._event == "window-detected" then
@@ -197,6 +177,7 @@ local function handle_aerospace_event(env)
             end
         end
     elseif evt._event == "focus-changed" then
+        update_focus(evt.workspace)
         -- XXX: 无窗口关闭事件，焦点重排时兜底全量刷新；焦点窗口关闭时事件早于窗口销毁，
         --      可能拉到中间态（图标残留），下次切换纠正（见下方总述）
         refresh_workspace_data()
@@ -253,7 +234,12 @@ local function init_workspace_items()
                 return
             end
             if env.BUTTON ~= "left" then return end
-            sbar.exec("aerospace workspace -- " .. shell.quote(ws_id))
+
+            -- 点击先移动高亮，并作废在途快照；失败则 resync 回滚
+            refresh_seq = refresh_seq + 1
+            update_focus(ws_id, workspace_data.focused_ws)
+            sbar.exec("aerospace workspace -- " .. shell.quote(ws_id) ..
+                " || sketchybar --trigger aerospace_resync")
         end)
 
         ws_item:subscribe("mouse.entered", function()
