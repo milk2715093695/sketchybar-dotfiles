@@ -1,4 +1,5 @@
 local settings = require("config.settings")    -- 加载设置
+local path = require("helpers.path")           -- 配置目录路径
 
 -- 可选依赖检查（命令缺失时跳过对应 widget）
 local optional_deps = {
@@ -34,7 +35,7 @@ local function load_widgets(side)
             if not skip then
                 local helper = helper_deps[cfg.name]
                 if helper then
-                    local f = io.open(helper, "r")
+                    local f = io.open(path.path(helper), "r")
                     if f then
                         f:close()
                     else

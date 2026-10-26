@@ -2,8 +2,9 @@ local colors = require("config.colors")        -- 加载颜色配置
 local icons = require("config.icons")          -- 加载图标配置
 local settings = require("config.settings")    -- 加载设置配置
 local padding = require("helpers.padding")     -- popup 间距
+local path = require("helpers.path")           -- 配置目录路径
 
-local menus_file = io.open("helpers/menus/bin/menus", "r")
+local menus_file = io.open(path.path("helpers/menus/bin/menus"), "r")
 local menus_available = menus_file ~= nil
 if menus_file then menus_file:close() end
 
