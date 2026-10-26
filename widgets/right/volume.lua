@@ -2,8 +2,8 @@ local colors = require("config.colors")         -- 加载颜色配置
 local icons = require("config.icons")           -- 加载图标配置
 local padding = require("helpers.padding")      -- popup 间距
 local settings = require("config.settings")     -- 加载设置配置
-local spacer = require("helpers.spacer")        -- 统一间距 spacer
 local shell = require("helpers.shell")          -- 加载 shell 转义
+local spacer = require("helpers.spacer")        -- 间距
 
 local popup_width = 250
 
@@ -23,7 +23,7 @@ local volume_item = sbar.add("item", "right.volume", {
     popup = { align = "center" },
 })
 
-spacer.add("right.volume.padding")
+spacer.add("right.volume.left.spacer", settings.item_gap / 2)
 
 local volume_slider = sbar.add("slider", popup_width, {
     position = "popup." .. volume_item.name,

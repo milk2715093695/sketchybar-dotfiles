@@ -2,7 +2,8 @@
 local composite_edge = 10
 
 return {
-    paddings = 3,           -- 全局基础间距：spacer 宽度 / 默认 icon+label padding / 部分 label 左距
+    paddings = 3,           -- 默认 icon+label padding / 部分 label 左距
+    item_gap = 4,           -- 卡片间距：普通 item 左右各取一半，bracket 结构按需补齐
     content_padding = 8,    -- item 内部呼吸：icon/label 距 item 边缘
     font = require("config.default_font"),
     max_icons_per_ws = 5,   -- 每个 aerospace 的 workspaces 最多显示多少个图标

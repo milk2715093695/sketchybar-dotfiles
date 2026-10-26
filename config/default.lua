@@ -56,7 +56,7 @@ sbar.default({
     },
 
     blur_radius = 40,
-    padding_left = 2,
-    padding_right = 2,
+    padding_left = settings.item_gap / 2,
+    padding_right = settings.item_gap / 2,
     scroll_texts = true,
 })

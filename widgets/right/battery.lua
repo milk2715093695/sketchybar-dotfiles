@@ -2,7 +2,6 @@ local icons = require("config.icons")           -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
 local padding = require("helpers.padding")      -- popup 间距
-local spacer = require("helpers.spacer")        -- 统一间距 spacer
 
 local battery = sbar.add("item", "right.battery", {
     position = "right",
@@ -13,8 +12,6 @@ local battery = sbar.add("item", "right.battery", {
     popup = { align = "center" },
     background = { color = colors.bg.bg1 },
 })
-
-spacer.add("right.battery.padding")
 
 local remaining_time = sbar.add("item", padding.apply_popup({
     position = "popup." .. battery.name,

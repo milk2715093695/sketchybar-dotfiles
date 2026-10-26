@@ -2,7 +2,6 @@ local colors = require("config.colors")         -- 加载颜色配置
 local icon_map = require("config.icon_map")     -- 加载图标配置
 local settings = require("config.settings")     -- 加载全局配置
 local shell = require("helpers.shell")          -- shell 参数转义
-local spacer = require("helpers.spacer")        -- 统一间距 spacer
 
 local M = {}
 
@@ -50,10 +49,6 @@ end
 
 for _, app in ipairs(settings.social.apps) do
     M[app.id] = create_app_widget(app)
-end
-
-if #settings.social.apps > 0 then
-    spacer.add("right.social.padding")
 end
 
 return M

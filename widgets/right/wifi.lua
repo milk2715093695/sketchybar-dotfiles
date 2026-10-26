@@ -2,8 +2,8 @@ local icons = require("config.icons")           -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
 local padding = require("helpers.padding")      -- popup 间距
-local spacer = require("helpers.spacer")        -- 统一间距 spacer
 local shell = require("helpers.shell")          -- 加载 shell 转义
+local spacer = require("helpers.spacer")        -- 间距
 
 sbar.exec("pkill -f 'network_load.*network_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load " .. settings.network.interface .. " network_update 2.0")
 
@@ -79,6 +79,8 @@ local wifi_bracket = sbar.add("bracket", "right.wifi.bracket", {
     background = { color = colors.bg.bg1 },
     popup = { align = "center", height = 30 },
 })
+
+spacer.add("right.wifi.left.spacer", settings.item_gap)
 
 local ssid = sbar.add("item", padding.apply_popup({
     position = "popup." .. wifi_bracket.name,
@@ -161,8 +163,6 @@ local router = sbar.add("item", padding.apply_popup({
         align = "right",
     },
 }))
-
-spacer.add("right.wifi.padding")
 
 wifi_up:subscribe("network_update", function(env)
     local up_color = (env.upload == "000 Bps") and colors.palette.grey or colors.palette.red

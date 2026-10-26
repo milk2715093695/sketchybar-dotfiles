@@ -1,7 +1,6 @@
 local icons = require("config.icons")           -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
-local spacer = require("helpers.spacer")        -- 统一间距 spacer
 
 sbar.exec("pkill -f 'cpu_load cpu_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/cpu_load/bin/cpu_load cpu_update 2.0")
 
@@ -40,8 +39,6 @@ local cpu = sbar.add("graph", "right.cpu", 42, {
 sbar.add("bracket", "right.cpu.bracket", { cpu.name }, {
     background = { color = colors.bg.bg1 },
 })
-
-spacer.add("right.cpu.padding")
 
 cpu:subscribe("cpu_update", function(env)
     -- Also available: env.user_load, env.sys_load
