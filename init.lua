@@ -1,3 +1,8 @@
+-- Derived from FelixKratz/dotfiles (GPL-3.0-only).
+-- Copyright (C) Felix Kratz.
+-- Copyright (C) 2026 MRK (modifications).
+-- SPDX-License-Identifier: GPL-3.0-only
+
 -- Require the sketchybar module
 -- FelixKratz/SbarLua 提供
 -- sbar 是本仓库中**唯一允许的全局变量**，仅供 SketchyBar API 入口使用

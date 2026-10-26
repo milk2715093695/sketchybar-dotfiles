@@ -100,7 +100,10 @@ https://github.com/FelixKratz/dotfiles
 
 ## 许可证
 
-原项目使用 **GNU General Public License v3.0 (GPLv3)** 许可证发布。
-由于本仓库基于该项目进行修改，根据 GPLv3 的要求，本仓库同样以 **GPLv3** 许可证发布。
+本仓库以 **GPL-3.0-only** 发布。
 
-有关许可证的完整内容，请参阅仓库中的 [LICENSE](./LICENSE) 文件。
+部分配置文件和 C helper 基于 [FelixKratz/dotfiles](https://github.com/FelixKratz/dotfiles) 修改，原项目版权归 Felix Kratz 所有；其余为本地原创实现，本地代码版权归 2026 MRK 所有。上游基线为 commit `67ad686ea6d4c29ccd54fdaa42cdf35f37a7219c`。
+
+完整的许可证文本见 [LICENSE](./LICENSE)，来源、版权和逐文件衍生说明见 [NOTICE](./NOTICE)。
+
+`config/icon_map_fallback.lua` 由 [sketchybar-app-font](https://github.com/kvndrsslr/sketchybar-app-font) 生成，该数据以 CC0-1.0 发布。

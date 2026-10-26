@@ -1,3 +1,6 @@
+-- Copyright (C) 2026 MRK.
+-- SPDX-License-Identifier: GPL-3.0-only
+
 local M = {}
 
 -- 生成可安全插入 POSIX shell 的单引号字符串

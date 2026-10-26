@@ -1,3 +1,7 @@
+-- Generated from sketchybar-app-font (CC0-1.0).
+-- https://github.com/kvndrsslr/sketchybar-app-font
+-- Do not edit manually.
+
 return {
 	[ [[Live]] ] = ":ableton:",
 	[ [[Accessibility Reader]] ] = ":accessibility_reader:",

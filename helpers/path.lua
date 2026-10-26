@@ -1,3 +1,6 @@
+-- Copyright (C) 2026 MRK.
+-- SPDX-License-Identifier: GPL-3.0-only
+
 local config_dir = os.getenv("CONFIG_DIR")
 
 if not config_dir or config_dir == "" then

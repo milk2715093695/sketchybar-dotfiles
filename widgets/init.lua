@@ -1,3 +1,6 @@
+-- Copyright (C) 2026 MRK.
+-- SPDX-License-Identifier: GPL-3.0-only
+
 local settings = require("config.settings")    -- 加载设置
 local path = require("helpers.path")           -- 配置目录路径
 

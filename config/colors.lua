@@ -1,3 +1,6 @@
+-- Copyright (C) 2026 MRK.
+-- SPDX-License-Identifier: GPL-3.0-only
+
 local colors = {}
 
 -- 基础调色板

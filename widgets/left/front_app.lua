@@ -1,3 +1,8 @@
+-- Derived from FelixKratz/dotfiles (GPL-3.0-only).
+-- Copyright (C) Felix Kratz.
+-- Copyright (C) 2026 MRK (modifications).
+-- SPDX-License-Identifier: GPL-3.0-only
+
 local settings = require("config.settings")    -- 加载设置配置
 
 local front_app = sbar.add("item", "left.front_app", {

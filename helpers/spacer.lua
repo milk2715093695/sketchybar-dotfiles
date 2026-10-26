@@ -1,3 +1,6 @@
+-- Copyright (C) 2026 MRK.
+-- SPDX-License-Identifier: GPL-3.0-only
+
 local settings = require("config.settings")    -- 加载设置配置
 
 -- 统一 widget 间距：默认宽度来自 settings.item_gap，可按需覆盖

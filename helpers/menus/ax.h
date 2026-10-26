@@ -1,3 +1,10 @@
+/*
+ * Derived from FelixKratz/dotfiles (GPL-3.0-only).
+ * Copyright (C) Felix Kratz.
+ * Copyright (C) 2026 MRK (modifications).
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
 #ifndef AX_H
 #define AX_H
 

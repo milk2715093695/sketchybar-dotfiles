@@ -1,0 +1,82 @@
+sketchybar-dotfiles
+===================
+
+This repository contains configuration files derived from:
+
+  FelixKratz/dotfiles
+  https://github.com/FelixKratz/dotfiles
+  Copyright (C) Felix Kratz
+  Licensed under GPL-3.0-only
+  Baseline commit: 67ad686ea6d4c29ccd54fdaa42cdf35f37a7219c (2025-10-04)
+
+Modifications and original additions:
+
+  Copyright (C) 2026 MRK
+  Licensed under GPL-3.0-only
+  Local changes are tracked in the repository git history.
+
+Classification note
+-------------------
+
+Classification is based on file-level comparison with the baseline commit,
+not on filenames alone. "Original" means independently rewritten without
+substantial copied code; small shared configuration keys or API patterns
+remain covered by the repository-level attribution above.
+
+Substantially derived files
+---------------------------
+
+  bar.lua
+  init.lua
+  install_sketchybar.sh
+  sketchybarrc
+  config/default.lua
+  config/default_font.lua
+  config/icons.lua
+  helpers/Makefile
+  helpers/init.lua
+  helpers/event_providers/Makefile
+  helpers/event_providers/sketchybar.h
+  helpers/event_providers/cpu_load/*
+  helpers/event_providers/network_load/*
+  helpers/menus/Makefile
+  helpers/menus/ax.c
+  helpers/menus/ax.h
+  helpers/menus/menus.c
+  widgets/left/front_app.lua
+  widgets/left/menus.lua
+  widgets/right/battery.lua
+  widgets/right/calendar.lua
+  widgets/right/cpu.lua
+  widgets/right/media.lua
+  widgets/right/volume.lua
+  widgets/right/wifi.lua
+
+Original implementations
+------------------------
+
+  subscribe_forward.sh
+  config/colors.lua
+  config/icon_map.lua
+  config/settings.lua
+  helpers/padding.lua
+  helpers/path.lua
+  helpers/shell.lua
+  helpers/spacer.lua
+  helpers/ui_mode.lua
+  widgets/init.lua
+  widgets/left/aero_ws.lua
+  widgets/left/apple.lua
+  widgets/right/social.lua
+
+Generated data
+--------------
+
+  config/icon_map_fallback.lua
+
+The app icon map is generated from sketchybar-app-font:
+
+  https://github.com/kvndrsslr/sketchybar-app-font
+  Licensed under CC0-1.0
+
+The full license text is in LICENSE.

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (C) 2026 MRK.
+# SPDX-License-Identifier: GPL-3.0-only
+
 # 将 aerospace subscribe 的增量事件转发为 sketchybar trigger。
 # 由 aerospace after-startup-command 拉起；subscribe 进程退出后不会自动重启。
 # 不用 set -e —— sketchybar 重启瞬间 trigger 会失败，set -e 会杀掉整个管道。

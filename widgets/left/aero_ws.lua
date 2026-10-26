@@ -1,3 +1,6 @@
+-- Copyright (C) 2026 MRK.
+-- SPDX-License-Identifier: GPL-3.0-only
+
 local colors = require("config.colors")            -- 加载颜色配置
 local settings = require("config.settings")        -- 加载设置配置
 local icon_map = require("config.icon_map")        -- 加载应用图标配置

@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Derived from FelixKratz/dotfiles (GPL-3.0-only).
+# Copyright (C) Felix Kratz.
+# Copyright (C) 2026 MRK (modifications).
+# SPDX-License-Identifier: GPL-3.0-only
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -1,3 +1,8 @@
+-- Derived from FelixKratz/dotfiles (GPL-3.0-only).
+-- Copyright (C) Felix Kratz.
+-- Copyright (C) 2026 MRK (modifications).
+-- SPDX-License-Identifier: GPL-3.0-only
+
 -- SbarLua 安装路径：$HOME/.local/share/sketchybar_lua/?.so
 local home = os.getenv("HOME")
 if home then
