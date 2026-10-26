@@ -18,8 +18,8 @@ local cpu = sbar.add("graph", "right.cpu", 42, {
     },
     icon = {
         string = icons.cpu,
-        padding_left = settings.content_padding,
-        padding_right = settings.content_padding,
+        padding_left = settings.composite_paddings.icon.padding_left,
+        padding_right = settings.composite_paddings.icon.padding_right,
     },
     label = {
         string = "cpu ??%",
@@ -31,7 +31,7 @@ local cpu = sbar.add("graph", "right.cpu", 42, {
         align = "left",
         -- 负 padding 左移 label 至 graph 左缘对齐；偏移 = graph 数据点数 42
         padding_left = -42,
-        padding_right = settings.content_padding,
+        padding_right = settings.composite_paddings.label.padding_right,
         width = 0,
         y_offset = 4,
     },

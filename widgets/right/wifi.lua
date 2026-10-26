@@ -1,6 +1,7 @@
 local icons = require("config.icons")           -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
+local padding = require("helpers.padding")      -- popup 间距
 local spacer = require("helpers.spacer")        -- 统一间距 spacer
 local shell = require("helpers.shell")          -- 加载 shell 转义
 
@@ -13,6 +14,7 @@ local wifi_up = sbar.add("item", "right.wifi.up", {
     padding_left = -5,
     width = 0,
     icon = {
+        padding_left = settings.paddings,
         padding_right = 0,
         font = {
             style = settings.font.style_map["Bold"],
@@ -28,7 +30,7 @@ local wifi_up = sbar.add("item", "right.wifi.up", {
         },
         color = colors.palette.red,
         string = "??? Bps",
-        padding_right = settings.content_padding,
+        padding_right = settings.composite_paddings.label.padding_right,
     },
     y_offset = 4,
 })
@@ -37,6 +39,7 @@ local wifi_down = sbar.add("item", "right.wifi.down", {
     position = "right",
     padding_left = -5,
     icon = {
+        padding_left = settings.paddings,
         padding_right = 0,
         font = {
             style = settings.font.style_map["Bold"],
@@ -52,14 +55,18 @@ local wifi_down = sbar.add("item", "right.wifi.down", {
         },
         color = colors.palette.blue,
         string = "??? Bps",
-        padding_right = settings.content_padding,
+        padding_right = settings.composite_paddings.label.padding_right,
     },
     y_offset = -4,
 })
 
 local wifi = sbar.add("item", "right.wifi", {
     position = "right",
-    padding_left = settings.content_padding,
+    padding_left = settings.composite_paddings.icon.padding_left,
+    icon = {
+        padding_left = settings.paddings,
+        padding_right = settings.composite_paddings.icon.padding_right,
+    },
     label = { drawing = false },
 })
 
@@ -73,7 +80,7 @@ local wifi_bracket = sbar.add("bracket", "right.wifi.bracket", {
     popup = { align = "center", height = 30 },
 })
 
-local ssid = sbar.add("item", {
+local ssid = sbar.add("item", padding.apply_popup({
     position = "popup." .. wifi_bracket.name,
     icon = {
         font = {
@@ -96,9 +103,9 @@ local ssid = sbar.add("item", {
         color = colors.palette.grey,
         y_offset = -15,
     },
-})
+}))
 
-local hostname = sbar.add("item", {
+local hostname = sbar.add("item", padding.apply_popup({
     position = "popup." .. wifi_bracket.name,
     icon = {
         align = "left",
@@ -111,9 +118,9 @@ local hostname = sbar.add("item", {
         width = popup_width / 2,
         align = "right",
     },
-})
+}))
 
-local ip = sbar.add("item", {
+local ip = sbar.add("item", padding.apply_popup({
     position = "popup." .. wifi_bracket.name,
     icon = {
         align = "left",
@@ -125,9 +132,9 @@ local ip = sbar.add("item", {
         width = popup_width / 2,
         align = "right",
     },
-})
+}))
 
-local mask = sbar.add("item", {
+local mask = sbar.add("item", padding.apply_popup({
     position = "popup." .. wifi_bracket.name,
     icon = {
         align = "left",
@@ -139,9 +146,9 @@ local mask = sbar.add("item", {
         width = popup_width / 2,
         align = "right",
     },
-})
+}))
 
-local router = sbar.add("item", {
+local router = sbar.add("item", padding.apply_popup({
     position = "popup." .. wifi_bracket.name,
     icon = {
         align = "left",
@@ -153,7 +160,7 @@ local router = sbar.add("item", {
         width = popup_width / 2,
         align = "right",
     },
-})
+}))
 
 spacer.add("right.wifi.padding")
 
