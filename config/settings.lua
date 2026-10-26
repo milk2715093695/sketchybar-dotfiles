@@ -20,6 +20,7 @@ return {
         apps = {
             { id = "wechat",      bundle = "com.tencent.xinWeChat",   icon = "WeChat" },
             { id = "qq",          bundle = "com.tencent.qq",          icon = "QQ" },
+            { id = "thunderbird", bundle = "org.mozilla.thunderbird", icon = "Thunderbird" },
         },
     },
 
