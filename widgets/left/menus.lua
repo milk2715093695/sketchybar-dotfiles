@@ -38,7 +38,7 @@ local menu_padding = sbar.add("item", "left.menu.padding", {
 })
 
 -- 菜单/空间切换按钮
-local switch_button = sbar.add("item", {
+local switch_button = sbar.add("item", "left.menus.toggle", {
     padding_left = -3,
     padding_right = 0,
     icon = {
