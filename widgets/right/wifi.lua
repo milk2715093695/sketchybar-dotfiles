@@ -5,7 +5,7 @@ local padding = require("helpers.padding")      -- popup 间距
 local shell = require("helpers.shell")          -- 加载 shell 转义
 local spacer = require("helpers.spacer")        -- 间距
 
-sbar.exec("pkill -f 'network_load.*network_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load " .. settings.network.interface .. " network_update 2.0")
+sbar.exec("pkill -f 'network_load.*network_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load " .. shell.quote(settings.network.interface) .. " network_update 2.0")
 
 local popup_width = 250
 
