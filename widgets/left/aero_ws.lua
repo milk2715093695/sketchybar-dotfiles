@@ -5,6 +5,8 @@ local ui_mode = require("helpers.ui_mode")         -- 加载 UI 模式状态
 local shell = require("helpers.shell")             -- 加载 shell 转义工具
 
 local workspace_items = {}
+local workspace_order = {}
+local anchor_name = "left.aero_workspace_anchor"
 local workspace_data = {
     monitor_map = {},
     focused_ws = nil,
@@ -102,6 +104,130 @@ end
 -- 全量刷新：初始加载、切换 workspace、显示器变化等
 local refresh_seq = 0
 
+local function create_workspace_item(ws_id, drawing)
+    local ws_item = sbar.add("item", "left.aero_workspace." .. ws_id, {
+        drawing = drawing,
+        icon = {
+            string = ws_id,
+            color = colors.aerospace.icon_color,
+            highlight_color = colors.aerospace.icon_highlight_color,
+        },
+        label = {
+            color = colors.aerospace.label_color,
+            highlight_color = colors.aerospace.label_highlight_color,
+            font = "sketchybar-app-font:Regular:14.0",
+        },
+        background = { color = colors.bg.bg1 },
+    })
+
+    workspace_items[ws_id] = ws_item
+
+    ws_item:subscribe("mouse.clicked", function(env)
+        if env.BUTTON == "right" then
+            sbar.exec("aerospace move-node-to-workspace -- " .. shell.quote(ws_id))
+            return
+        end
+        if env.BUTTON ~= "left" then return end
+        if ws_id == workspace_data.focused_ws then return end
+
+        -- 点击先移动高亮，并作废在途快照；失败则 resync 回滚
+        refresh_seq = refresh_seq + 1
+        update_focus(ws_id, workspace_data.focused_ws)
+        sbar.exec("aerospace workspace -- " .. shell.quote(ws_id) ..
+            " || sketchybar --trigger aerospace_resync")
+    end)
+
+    ws_item:subscribe("mouse.entered", function()
+        workspace_items[ws_id]:set({
+            background = { border_color = colors.aerospace.hover_border_color },
+        })
+    end)
+
+    ws_item:subscribe("mouse.exited", function()
+        if ws_id == workspace_data.focused_ws then
+            workspace_items[ws_id]:set({
+                background = { border_color = colors.aerospace.hover_border_color }
+            })
+        else
+            workspace_items[ws_id]:set({
+                background = { border_color = colors.aerospace.border_color },
+            })
+        end
+    end)
+
+    return ws_item
+end
+
+-- workspace 集合变化时增删 item，并保持顺序稳定
+local function sync_workspace_items(desired, seq)
+    local desired_set = {}
+    for _, ws_id in ipairs(desired) do
+        desired_set[ws_id] = true
+    end
+
+    for ws_id in pairs(workspace_items) do
+        if not desired_set[ws_id] then
+            sbar.remove("left.aero_workspace." .. ws_id)
+            workspace_items[ws_id] = nil
+            workspace_data.apps_by_ws[ws_id] = nil
+            workspace_data.monitor_map[ws_id] = nil
+        end
+    end
+
+    local new_items = {}
+    for _, ws_id in ipairs(desired) do
+        if not workspace_items[ws_id] then
+            create_workspace_item(ws_id, false)
+            new_items[#new_items + 1] = ws_id
+        end
+    end
+
+    local order_changed = #workspace_order ~= #desired
+    if not order_changed then
+        for i, ws_id in ipairs(desired) do
+            if workspace_order[i] ~= ws_id then
+                order_changed = true
+                break
+            end
+        end
+    end
+
+    if #new_items == 0 and not order_changed then
+        workspace_order = desired
+        return false
+    end
+
+    local command = { "sketchybar" }
+    for _, ws_id in ipairs(desired) do
+        command[#command + 1] = "--move"
+        command[#command + 1] = shell.quote("left.aero_workspace." .. ws_id)
+        command[#command + 1] = "before"
+        command[#command + 1] = shell.quote(anchor_name)
+    end
+
+    sbar.exec(table.concat(command, " "), function(_, exit_code)
+        if seq ~= refresh_seq then return end
+
+        if exit_code ~= 0 then
+            print("sketchybar: workspace reorder failed: " .. tostring(exit_code))
+            for _, ws_id in ipairs(desired) do
+                if workspace_items[ws_id] then
+                    update_workspace(ws_id, workspace_data)
+                end
+            end
+            return
+        end
+
+        workspace_order = desired
+        for _, ws_id in ipairs(desired) do
+            if workspace_items[ws_id] then
+                update_workspace(ws_id, workspace_data)
+            end
+        end
+    end)
+    return true
+end
+
 local function refresh_workspace_data()
     refresh_seq = refresh_seq + 1
     local seq = refresh_seq
@@ -109,6 +235,11 @@ local function refresh_workspace_data()
     coroutine.wrap(function()
         local all_ws = async_exec(get_all_ws)
         if seq ~= refresh_seq or type(all_ws) ~= "table" then return end
+
+        if #all_ws == 0 then
+            print("sketchybar: ignoring empty AeroSpace workspace list")
+            return
+        end
 
         local windows = async_exec(get_all_windows)
         if seq ~= refresh_seq or type(windows) ~= "table" then return end
@@ -135,7 +266,13 @@ local function refresh_workspace_data()
 
         workspace_data.monitor_map = monitor_map
         workspace_data.apps_by_ws = apps_by_ws
-        if focused_ws then workspace_data.focused_ws = focused_ws end
+        workspace_data.focused_ws = focused_ws
+
+        local desired = {}
+        for _, ws in ipairs(all_ws) do
+            desired[#desired + 1] = ws.workspace
+        end
+        if sync_workspace_items(desired, seq) then return end
 
         for ws_id in pairs(workspace_items) do
             update_workspace(ws_id, workspace_data)
@@ -143,9 +280,12 @@ local function refresh_workspace_data()
     end)()
 end
 
--- AeroSpace 重启但 sketchybar 未重启时，清掉旧焦点状态并重新拉全量快照
+-- AeroSpace 重启但 sketchybar 未重启时，先清掉旧高亮，再异步拉全量快照
 local function resync_workspace_data()
     workspace_data.focused_ws = nil
+    for ws_id in pairs(workspace_items) do
+        update_workspace(ws_id, workspace_data)
+    end
     refresh_workspace_data()
 end
 
@@ -160,6 +300,11 @@ local function handle_aerospace_event(env)
         -- subscribe 无窗口关闭事件：切换时全量扫描兜底，纠正所有 workspace 的残留图标
         refresh_workspace_data()
     elseif evt._event == "window-detected" then
+        if not workspace_items[evt.workspace] then
+            refresh_workspace_data()
+            return
+        end
+
         local apps = workspace_data.apps_by_ws[evt.workspace] or {}
         local found = false
         for _, app in ipairs(apps) do
@@ -172,9 +317,7 @@ local function handle_aerospace_event(env)
         if not found then
             table.insert(apps, evt.appName)
             workspace_data.apps_by_ws[evt.workspace] = apps
-            if workspace_items[evt.workspace] then
-                update_workspace(evt.workspace, workspace_data)
-            end
+            update_workspace(evt.workspace, workspace_data)
         end
     elseif evt._event == "focus-changed" then
         update_focus(evt.workspace)
@@ -212,64 +355,22 @@ local function init_workspace_items()
     end
 
     for _, ws_id in ipairs(ws_ids) do
-        local ws_item = sbar.add("item", "left.aero_workspace." .. ws_id ,{
-            icon = {
-                string = ws_id,
-                color = colors.aerospace.icon_color,
-                highlight_color = colors.aerospace.icon_highlight_color,
-            },
-            label = {
-                color = colors.aerospace.label_color,
-                highlight_color = colors.aerospace.label_highlight_color,
-                font = "sketchybar-app-font:Regular:14.0",
-            },
-            background = { color = colors.bg.bg1 },
-        })
-
-        workspace_items[ws_id] = ws_item
-
-        ws_item:subscribe("mouse.clicked", function(env)
-            if env.BUTTON == "right" then
-                sbar.exec("aerospace move-node-to-workspace -- " .. shell.quote(ws_id))
-                return
-            end
-            if env.BUTTON ~= "left" then return end
-
-            -- 点击先移动高亮，并作废在途快照；失败则 resync 回滚
-            refresh_seq = refresh_seq + 1
-            update_focus(ws_id, workspace_data.focused_ws)
-            sbar.exec("aerospace workspace -- " .. shell.quote(ws_id) ..
-                " || sketchybar --trigger aerospace_resync")
-        end)
-
-        ws_item:subscribe("mouse.entered", function()
-            workspace_items[ws_id]:set({
-                background = { border_color = colors.aerospace.hover_border_color },
-            })
-        end)
-
-        ws_item:subscribe("mouse.exited", function()
-            if ws_id == workspace_data.focused_ws then
-                workspace_items[ws_id]:set({
-                    background = { border_color = colors.aerospace.hover_border_color }
-                })
-            else
-                workspace_items[ws_id]:set({
-                    background = { border_color = colors.aerospace.border_color },
-                })
-            end
-        end)
+        create_workspace_item(ws_id, true)
     end
+    workspace_order = ws_ids
 end
 
 -- 注册 aerospace subscribe 转发事件
 sbar.add("event", "aerospace_event")
 
--- 创建一个隐藏 refresh 组件，只订阅一次事件
-local refresh_item = sbar.add("item", {
+-- 先建初始 workspace，锚点才能固定在组右边界
+init_workspace_items()
+
+-- 锚点固定 workspace 组右边界，新 item 先移入再排序
+local refresh_item = sbar.add("item", anchor_name, {
     icon = { drawing = false },
     label = { drawing = false },
-    background = { drawing = false },
+    background = { drawing = false, border_width = 0 },
     padding_left = 0,
     padding_right = 0,
 })
@@ -291,5 +392,4 @@ ui_mode.subscribe(function(mode)
 end)
 
 -- 初始化 workspace 数据
-init_workspace_items()
 refresh_workspace_data()
