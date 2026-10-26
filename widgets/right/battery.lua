@@ -1,23 +1,13 @@
 local icons = require("config.icons")           -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
+local padding = require("helpers.padding")      -- popup 间距
 local spacer = require("helpers.spacer")        -- 统一间距 spacer
 
 local battery = sbar.add("item", "right.battery", {
     position = "right",
-    padding_left = 0,
-    padding_right = 0,
-    icon = {
-        font = {
-            style = settings.font.style_map["Regular"],
-            size = 19.0,
-        },
-        padding_left = settings.content_padding,
-    },
     label = {
         font = { family = settings.font.numbers },
-        padding_left = settings.paddings,
-        padding_right = settings.content_padding,
     },
     update_freq = 180,
     popup = { align = "center" },
@@ -26,7 +16,7 @@ local battery = sbar.add("item", "right.battery", {
 
 spacer.add("right.battery.padding")
 
-local remaining_time = sbar.add("item", {
+local remaining_time = sbar.add("item", padding.apply_popup({
     position = "popup." .. battery.name,
     icon = {
         string = "Time remaining:",
@@ -38,7 +28,7 @@ local remaining_time = sbar.add("item", {
         width = 100,
         align = "right",
     },
-})
+}))
 
 battery:subscribe({"routine", "power_source_change", "system_woke"}, function()
     sbar.exec("pmset -g batt", function(batt_info)

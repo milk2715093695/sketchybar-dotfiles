@@ -1,4 +1,6 @@
 -- 基本配置项
+local composite_edge = 10
+
 return {
     paddings = 3,           -- 全局基础间距：spacer 宽度 / 默认 icon+label padding / 部分 label 左距
     content_padding = 8,    -- item 内部呼吸：icon/label 距 item 边缘
@@ -16,8 +18,19 @@ return {
     -- 社交 App（依赖 LaunchServices StatusLabel）
     social = {
         apps = {
-            { id = "wechat", bundle = "com.tencent.xinWeChat", icon = "WeChat" },
-            { id = "qq",     bundle = "com.tencent.qq",        icon = "QQ" },
+            { id = "wechat",      bundle = "com.tencent.xinWeChat",   icon = "WeChat" },
+            { id = "qq",          bundle = "com.tencent.qq",          icon = "QQ" },
+        },
+    },
+
+    -- 复合 item 间距
+    composite_paddings = {
+        icon = {
+            padding_left = composite_edge,
+            padding_right = 5,
+        },
+        label = {
+            padding_right = composite_edge,
         },
     },
 

@@ -1,6 +1,7 @@
 local colors = require("config.colors")        -- 加载颜色配置
 local icons = require("config.icons")          -- 加载图标配置
 local settings = require("config.settings")    -- 加载设置配置
+local padding = require("helpers.padding")     -- popup 间距
 
 local menus_file = io.open("helpers/menus/bin/menus", "r")
 local menus_available = menus_file ~= nil
@@ -14,7 +15,7 @@ local function add_popup_item(args)
     local click_cmd = args.click_cmd
     local subscribe_click = args.subscribe_click
 
-    local item = sbar.add("item", {
+    local item = sbar.add("item", padding.apply_popup({
         position = "popup." .. parent.name,
         icon = { string = icon_str },
         label = { string = label_str },
@@ -24,7 +25,7 @@ local function add_popup_item(args)
             drawing = true,
             border_width = 0,
         },
-    })
+    }))
 
     if subscribe_click then
         item:subscribe("mouse.clicked", function(env)

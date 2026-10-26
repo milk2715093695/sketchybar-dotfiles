@@ -1,6 +1,6 @@
 local colors = require("config.colors")         -- 加载颜色配置
 local icons = require("config.icons")           -- 加载图标配置
-local presets = require("config.presets")       -- 复合 item 间距
+local padding = require("helpers.padding")      -- popup 间距
 local settings = require("config.settings")     -- 加载设置配置
 local spacer = require("helpers.spacer")        -- 统一间距 spacer
 local shell = require("helpers.shell")          -- 加载 shell 转义
@@ -14,17 +14,9 @@ local volume_item = sbar.add("item", "right.volume", {
         width = 25,
         align = "left",
         color = colors.palette.white,
-        padding_left = presets.composite.icon.padding_left,
-        padding_right = presets.composite.icon.padding_right,
-        font = {
-            style = settings.font.style_map["Regular"],
-            size = 14.0,
-        },
     },
     label = {
         string = "??%",
-        padding_left = settings.paddings,
-        padding_right = presets.composite.label.padding_right,
         font = { family = settings.font.numbers },
     },
     background = { color = colors.bg.bg1 },
@@ -123,7 +115,7 @@ local function volume_toggle_details(env)
                     if current_device == device then
                         color = colors.palette.white
                     end
-                    sbar.add("item", "volume.device." .. counter, {
+                    sbar.add("item", "volume.device." .. counter, padding.apply_popup({
                         position = "popup." .. volume_item.name,
                         width = popup_width,
                         align = "center",
@@ -131,7 +123,7 @@ local function volume_toggle_details(env)
                         click_script = "SwitchAudioSource -s " .. shell.quote(device) ..
                             " && sketchybar --set /volume.device\\.*/ label.color=" .. colors.palette.grey ..
                             " --set $NAME label.color=" .. colors.palette.white,
-                    })
+                    }))
                     counter = counter + 1
                 end
             end)

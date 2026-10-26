@@ -1,7 +1,6 @@
 local colors = require("config.colors")            -- 加载颜色配置
 local settings = require("config.settings")        -- 加载设置配置
 local icon_map = require("config.icon_map")        -- 加载应用图标配置
-local presets = require("config.presets")          -- 复合 item 间距
 local ui_mode = require("helpers.ui_mode")         -- 加载 UI 模式状态
 local shell = require("helpers.shell")             -- 加载 shell 转义工具
 
@@ -237,18 +236,11 @@ local function init_workspace_items()
                 string = ws_id,
                 color = colors.aerospace.icon_color,
                 highlight_color = colors.aerospace.icon_highlight_color,
-                font = {
-                    size = 14.0,
-                    style = settings.font.style_map["Heavy"],
-                },
-                padding_left = presets.composite.icon.padding_left,
-                padding_right = presets.composite.icon.padding_right,
             },
             label = {
                 color = colors.aerospace.label_color,
                 highlight_color = colors.aerospace.label_highlight_color,
                 font = "sketchybar-app-font:Regular:14.0",
-                padding_right = presets.composite.label.padding_right,
             },
             background = { color = colors.bg.bg1 },
         })

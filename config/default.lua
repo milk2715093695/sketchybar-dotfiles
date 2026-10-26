@@ -13,8 +13,8 @@ sbar.default({
             size = 14.0,
         },
         color = colors.palette.white,
-        padding_left = settings.paddings,
-        padding_right = settings.paddings,
+        padding_left = settings.composite_paddings.icon.padding_left,
+        padding_right = settings.composite_paddings.icon.padding_right,
         background = { image = { corner_radius = 9 } },
     },
 
@@ -27,7 +27,7 @@ sbar.default({
         },
         color = colors.palette.white,
         padding_left = settings.paddings,
-        padding_right = settings.paddings,
+        padding_right = settings.composite_paddings.label.padding_right,
     },
 
     -- 默认背景设置

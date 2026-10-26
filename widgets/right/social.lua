@@ -14,6 +14,11 @@ local function create_app_widget(app)
             font = "sketchybar-app-font:Regular:16.0",
             string = (app.icon and icon_map[app.icon]) or icon_map["Default"],
             color = colors.palette.white,
+            padding_left = settings.paddings,
+            padding_right = settings.paddings,
+        },
+        label = {
+            padding_right = settings.paddings,
         },
         update_freq = 5,
     })

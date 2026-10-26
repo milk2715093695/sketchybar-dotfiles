@@ -1,5 +1,6 @@
 local icons = require("config.icons")       -- 加载图标配置
 local colors = require("config.colors")     -- 加载颜色配置
+local padding = require("helpers.padding")  -- popup 间距
 
 local whitelist = { ["Spotify"] = true,
                     ["Music"] = true }
@@ -56,24 +57,24 @@ local media_title = sbar.add("item", "right.media.title", {
 })
 
 -- Popup playback controls
-sbar.add("item", {
+sbar.add("item", padding.apply_popup({
     position = "popup." .. media_cover.name,
     icon = { string = icons.media.back },
     label = { drawing = false },
     click_script = "nowplaying-cli previous",
-})
-sbar.add("item", {
+}))
+sbar.add("item", padding.apply_popup({
     position = "popup." .. media_cover.name,
     icon = { string = icons.media.play_pause },
     label = { drawing = false },
     click_script = "nowplaying-cli togglePlayPause",
-})
-sbar.add("item", {
+}))
+sbar.add("item", padding.apply_popup({
     position = "popup." .. media_cover.name,
     icon = { string = icons.media.forward },
     label = { drawing = false },
     click_script = "nowplaying-cli next",
-})
+}))
 
 local interrupt = 0
 local function animate_detail(detail)
