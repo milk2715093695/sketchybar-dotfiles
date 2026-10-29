@@ -283,6 +283,54 @@ local function refresh_workspace_data()
     end)()
 end
 
+-- 仅刷新窗口快照：复用 workspace 元数据；未知 workspace 或退化为空时回退全量
+local function refresh_windows_data(focused_ws)
+    refresh_seq = refresh_seq + 1
+    local seq = refresh_seq
+
+    coroutine.wrap(function()
+        local windows = async_exec(get_all_windows)
+        if seq ~= refresh_seq or type(windows) ~= "table" then return end
+
+        local apps_by_ws = {}
+        for ws_id in pairs(workspace_items) do
+            apps_by_ws[ws_id] = {}
+        end
+
+        local seen = {}
+        for _, win in ipairs(windows) do
+            local ws_id, app = win.workspace, win["app-name"]
+            if not workspace_items[ws_id] then
+                refresh_workspace_data()
+                return
+            end
+
+            if app then
+                seen[ws_id] = seen[ws_id] or {}
+                if not seen[ws_id][app] then
+                    seen[ws_id][app] = true
+                    table.insert(apps_by_ws[ws_id], app)
+                end
+            end
+        end
+
+        -- workspace 退化为空时无法仅靠窗口列表判断是否已被删除
+        for ws_id, apps in pairs(workspace_data.apps_by_ws) do
+            if #apps > 0 and #(apps_by_ws[ws_id] or {}) == 0 then
+                refresh_workspace_data()
+                return
+            end
+        end
+
+        workspace_data.apps_by_ws = apps_by_ws
+        workspace_data.focused_ws = focused_ws
+
+        for ws_id in pairs(workspace_items) do
+            update_workspace(ws_id, workspace_data)
+        end
+    end)()
+end
+
 -- AeroSpace 重启但 sketchybar 未重启时，先清掉旧高亮，再异步拉全量快照
 local function resync_workspace_data()
     workspace_data.focused_ws = nil
@@ -324,9 +372,12 @@ local function handle_aerospace_event(env)
         end
     elseif evt._event == "focus-changed" then
         update_focus(evt.workspace)
-        -- XXX: 无窗口关闭事件，焦点重排时兜底全量刷新；焦点窗口关闭时事件早于窗口销毁，
-        --      可能拉到中间态（图标残留），下次切换纠正（见下方总述）
-        refresh_workspace_data()
+        -- XXX: 无窗口关闭事件，焦点重排时兜底窗口快照；未知 workspace 或退化为空时回退全量
+        if evt.workspace and workspace_items[evt.workspace] then
+            refresh_windows_data(evt.workspace)
+        else
+            refresh_workspace_data()
+        end
     elseif evt._event == "focused-monitor-changed" then
         refresh_workspace_data()
     end
