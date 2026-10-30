@@ -7,9 +7,11 @@ local icons = require("config.icons")           -- 加载图标配置
 local colors = require("config.colors")         -- 加载颜色配置
 local settings = require("config.settings")     -- 加载设置配置
 
+local graph_width = 42
+
 sbar.exec("pkill -f 'cpu_load cpu_update' 2>/dev/null; $CONFIG_DIR/helpers/event_providers/cpu_load/bin/cpu_load cpu_update 2.0")
 
-local cpu = sbar.add("graph", "right.cpu", 42, {
+local cpu = sbar.add("graph", "right.cpu", graph_width, {
     position = "right",
     padding_left = 0,
     padding_right = settings.content_padding,
@@ -33,8 +35,7 @@ local cpu = sbar.add("graph", "right.cpu", 42, {
             size = 9.0,
         },
         align = "left",
-        -- 负 padding 左移 label 至 graph 左缘对齐；偏移 = graph 数据点数 42
-        padding_left = -42,
+        padding_left = -graph_width,
         padding_right = settings.composite_paddings.label.padding_right,
         width = 0,
         y_offset = 4,
