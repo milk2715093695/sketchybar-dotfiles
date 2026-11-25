@@ -27,9 +27,10 @@ local function create_app_widget(app)
 
     widget:subscribe({"routine", "system_woke"}, function()
         sbar.exec("lsappinfo -all info " .. shell.quote(app.bundle), function(app_notify)
-            local notify_num = app_notify and app_notify:match('"StatusLabel"=%{ "label"="?(.-)"? %}')
+            local notify_num = app_notify
+                and app_notify:match('"StatusLabel"=%{ "label"="?([^"}]-%d[^"}]-)"?%s*%}')
 
-            if notify_num == nil or notify_num == "" then
+            if notify_num == nil then
                 widget:set({ label = { drawing = false } })
             else
                 widget:set({
